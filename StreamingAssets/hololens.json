@@ -1,0 +1,26 @@
+{
+  "platforms": [
+    {
+      "id": "QuadDisplayWithHololens",
+
+      "nodes": [
+        { "id": "hololens-5u2gu", "address": "10.160.36.111", "display": "disp_hololens"}
+      ],
+
+     "displays": [
+        { "id": "disp_hololens", "type": "hololens"}
+      ],
+
+      "viewports": [
+      ],
+
+      "trackers": [
+        { "id": "track_farleft", "address": "Farleft@10.160.98.129", "forward": "Z", "right": "-X", "up": "Y", handedness: "right" },
+        { "id": "track_left", "address": "Left@10.160.98.129", "forward": "Z", "right": "-X", "up": "Y", handedness: "right" },
+        { "id": "track_right", "address": "Right@10.160.98.129","forward": "Z", "right": "-X", "up": "Y", handedness: "right" },
+        { "id": "track_farright", "address": "Farright@10.160.98.129", "forward": "Z", "right": "-X", "up": "Y", handedness: "right" },
+	    { "id": "Wand", "address": "Wand@110.160.98.129", "forward": "Z", "right": "-X", "up": "Y", handedness: "right" }
+      ]
+    }
+  ]
+}
