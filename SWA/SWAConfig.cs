@@ -5,7 +5,9 @@ using UnityEngine;
 using HEVS;
 using System.IO;
 using SimpleJSON;
-using UnityOSC;
+using UnityEngine.XR;
+using UnityEngine.XR.WSA;
+using System;
 
 // TODO: This does not use inheritence
 
@@ -17,15 +19,22 @@ using UnityOSC;
 /// </summary>
 public class SWAConfig : MonoBehaviour
 {
+
+    #region Variables
     /// <summary>
     /// The main extra config being used by all other classes.
     /// </summary>
     public static SWAConfig current;
 
     /// <summary>
-    /// JSON data for later use.
+    /// Links display id's to their Display Tracker Config
     /// </summary>
-    public JSONNode platformJSON;
+    public Dictionary<DisplayConfig, DisplayTrackerConfig> displayTrackerConfigs;
+
+    /// <summary>
+    /// Links display id's to their HoloLens Config.
+    /// </summary>
+    public Dictionary<DisplayConfig, HoloLensConfig> holoLensConfigs;
 
     /// <summary>
     /// The port for sending holoLens 6Dof
@@ -33,199 +42,222 @@ public class SWAConfig : MonoBehaviour
     [HideInInspector]
     public int holoPort = 6668;
 
-    // For receiving holoLens positioning
-    private OSCReciever _reciever;
-    private Dictionary<string, HoloLensTracker> _holoTrackerFromID;
+    #endregion
 
-    private void Awake()
+    #region Unity Methods
+
+    private void Start()
     {
         current = this;
-        
-        // Get the configuration
-        ////platformJSON = GetPlatformJSON();
+        // Get the json
+        var platformJSONs = GetPlatformJSONs();
 
-        //if (platformJSON != null)
-        //{
-        //    // Get the holo port if available or use 6668
-        //    JSONNode json = platformJSON["cluster"];
-        //    if (json != null)
-        //    {
-        //        json = json["holo_port"];
-        //        if (json != null) holoPort = json.AsInt;
-        //    }
-        //}
-    }
+        // Read in all neccessary data
+        ReadDisplayTrackerConfigs(platformJSONs);
+        ReadHoloPort(platformJSONs);
+        ReadHoloLensConfigs(platformJSONs);
 
-    void Start()
-    {
-        //if (platformJSON != null)
-        //{
-        //    CreateTrackerToDisplays();
+        // Set up the tracking to displays if available
+        if (displayTrackerConfigs != null)
+            SetUpDisplayTrackers();
 
-        //    SetUpHoloLens();
-        //}
+        if (holoLensConfigs != null)
+        {
+            HoloLens.current = new HoloLens();
+
+            // Get the if it exists on this node
+            if (HoloLens.current.display != null)
+            {
+                var remote = HoloLens.current.display.HoloLensData().remote;
+
+                // Set up the holoLens now or wait for remoting
+                if (remote == null) HoloLens.current.Enable();
+                else HolographicRemoting.Connect(remote.address, remote.maxBitRate);
+            }
+        }
     }
 
     private void Update()
     {
-        if (_reciever != null)
+        if (HoloLens.current != null && HoloLens.current.display != null)
         {
-            // read messages while there are still messages to read
-            //while (_reciever.hasWaitingMessages())
-            //{
-            //    OSCMessage msg = _reciever.getNextMessage();
+            var remote = HoloLens.current.display.HoloLensData().remote;
 
-            //    Debug.Log(msg.Data);
+            // If remoting has now connected
+            if (remote != null && remote.connected == false
+                && HolographicRemoting.ConnectionState == HolographicStreamerConnectionState.Connected)
+            {
+                remote.connected = true;
+                StartCoroutine(LoadDevice("WindowsMR"));
+                HoloLens.current.Enable();
+            }
 
-            //    // Update the holoLens tracker if it exists
-            //    if (_holoTrackerFromID.ContainsKey(msg.Address))
-            //        _holoTrackerFromID[msg.Address].UpdateTransform(msg.Data);
-            //    else
-            //        Debug.Log("Invalid Address: " + msg.Address + ", " + msg.Data);
-            //}
+            // TODO: Would rather not send data like this.
+            if (remote == null || remote.connected == true) HoloLens.current.SendTransformData();
         }
     }
 
-    /// <summary>
-    /// Registers a holoLens tracker for the master node.
-    /// </summary>
-    /// <param name="tracker">The holoLens tracker of the master.</param>
-    public void RegisterHoloLensTracker(HoloLensTracker tracker)
+    public void OnDestroy()
     {
-        // Create the reciever and dictionary if there is none
-        if (_reciever == null)
-        {
-            _reciever = new OSCReciever();
-            _reciever.Open(holoPort);
-            _holoTrackerFromID = new Dictionary<string, HoloLensTracker>();
-        }
-
-        // add tracker to dictionary
-        _holoTrackerFromID.Add(tracker.displayID, tracker);
+        if (HoloLens.current != null)
+            HoloLens.current.Disable();
     }
 
-    /// <summary>
-    /// Reopens the config file to get the JSON data again.
-    /// </summary>
-    /// <returns>The JSONNode of the current platform.</returns>
-    private JSONNode GetPlatformJSON()
+    // Neccessary for remoting.
+    IEnumerator LoadDevice(string newDevice)
+    {
+        XRSettings.LoadDeviceByName(newDevice);
+        yield return null;
+        XRSettings.enabled = true;
+    }
+    #endregion
+
+    #region Read JSONs
+
+    // Reopens the config file to get the JSON data again.
+    private List<JSONNode> GetPlatformJSONs()
     {
         // Grab the config file and platform
         Configuration configuration = GetComponent<Configuration>();
+        
         string configFile = configuration.configFile;
+        if (!File.Exists(configFile)) configFile = Path.Combine("Assets", configFile);
+
         string platformID = PlatformConfig.current.id;
 
         // Read the file again and get initial node
         StreamReader reader = new StreamReader(configFile);
         JSONNode node = JSON.Parse(reader.ReadToEnd());
 
-        JSONArray array = node["platforms"].AsArray;
+        var allPlatforms = node["platforms"].Children;
 
-        // Look for the platform id
-        foreach (JSONNode platform in array)
+        // The list to return
+        List<JSONNode> platformJSONs = new List<JSONNode>();
+
+        do
         {
-            if (platform["id"].Value.ToLower() == platformID)
-                return platform;
-        }
+            // Get the platform using the ID
+            JSONNode platformJSON = allPlatforms.First(i => i["id"].Value.ToLower() == platformID);
 
-        return null;
+            platformJSONs.Insert(0, platformJSON);
+
+            // Now use the parent id
+            if (platformJSON["inherited"] != null)
+                platformID = platformJSON["inherited"].Value.ToLower();
+            else
+                platformID = null;
+
+        } while (platformID != null);
+
+        return platformJSONs;
     }
 
-    /// <summary>
-    /// Creates Trackers and Transform displays automatically.
-    /// </summary>
-    private void CreateTrackerToDisplays()
+    // Loads the display trackers from the json
+    private void ReadDisplayTrackerConfigs(List<JSONNode> platformJSONs)
     {
         // For creating the trackers
-        var trackerToDisplays = new Dictionary<string, TransformOffAxis>();
+        var displayTrackerConfigs = new Dictionary<DisplayConfig, DisplayTrackerConfig>();
 
-        // Check every display for a tracker
-        foreach (JSONNode displayJSON in platformJSON["displays"].AsArray)
+        // Go through the hierachy
+        foreach (var platformJSON in platformJSONs)
         {
-            JSONNode trackerJSON = displayJSON["tracker"];
-
-            if (trackerJSON != null)
+            // Check every display of the platform
+            foreach (JSONNode displayJSON in platformJSON["displays"].AsArray)
             {
-                // Get the ids
-                string trackerID = trackerJSON.Value;
-                string displayID = displayJSON["id"];
+                JSONNode trackerJSON = displayJSON["tracker"];
 
-                // If the tracker already exists
-                if (trackerToDisplays.ContainsKey(trackerID))
-                    trackerToDisplays[trackerID].displayIDs.Add(displayID);
-                else
+                if (trackerJSON != null)
                 {
-                    // Create the tracking object
-                    GameObject trackedObject = new GameObject(displayID + "-TransformDisplay");
+                    // Get the display
+                    string displayID = displayJSON["id"].Value.ToLower();
+                    DisplayConfig display = PlatformConfig.current.displays.Find(i => i.id == displayID);
 
-                    // Set up the tracker
-                    VRPNTracker tracker = trackedObject.AddComponent<VRPNTracker>();
-                    tracker.trackerID = trackerID;
+                    DisplayTrackerConfig displayTracker = null;
 
-                    // Set up the display
-                    var transformDisplay = trackedObject.AddComponent<TransformOffAxis>();
-                    transformDisplay.displayIDs = new List<string>() { displayID };
+                    // Tracker needs to be updated
+                    if (displayTrackerConfigs.ContainsKey(display))
+                        displayTracker = displayTrackerConfigs[display];
+                    else
+                    {
+                        // Need a new tracker
+                        displayTracker = new DisplayTrackerConfig();
+                        displayTrackerConfigs.Add(display, displayTracker);
+                    }
 
-                    // Add it to the dictionary
-                    trackerToDisplays.Add(trackerID, transformDisplay);
+                    displayTracker.ParseConfig(trackerJSON);
                 }
+            }
+        }
+
+        if (displayTrackerConfigs.Count > 0) { this.displayTrackerConfigs = displayTrackerConfigs; }
+    }
+
+    // Loads the HoloPort from the json
+    private void ReadHoloPort(List<JSONNode> platformJSONs)
+    {
+        // Get the holo port if available or use 6668
+        foreach (var platformJSON in platformJSONs)
+        {
+            JSONNode json = platformJSON["cluster"];
+            if (json != null)
+            {
+                json = json["holo_port"];
+                if (json != null) holoPort = json.AsInt;
             }
         }
     }
 
-    /// <summary>
-    /// Runs Hololens setup if display type is set to "holoLens".
-    /// </summary>
-    private void SetUpHoloLens()
+    // Loads the HoloLens configs form the json
+    private void ReadHoloLensConfigs(List<JSONNode> platformJSONs)
     {
-        if (IsRunningOnHoloLens())
+        // For creating the trackers
+        var holoLensConfigs = new Dictionary<DisplayConfig, HoloLensConfig>();
+
+        // Go through the hierachy
+        foreach (var platformJSON in platformJSONs)
         {
-            // TODO: Right now this just changes the holoLens' starting point to be the HEVS' origin.
+            // Check every display of the platform
+            foreach (JSONNode displayJSON in platformJSON["displays"].AsArray)
+            {
+                JSONNode typeJSON = displayJSON["type"];
 
-            // Get the holoLens' camera's transform
-            UnityEngine.Camera camera = UnityEngine.Camera.main;
+                if (typeJSON != null && typeJSON.Value.ToLower() == "hololens")
+                {
+                    // Get the display
+                    string displayID = displayJSON["id"].Value.ToLower();
+                    DisplayConfig display = PlatformConfig.current.displays.Find(i => i.id == displayID);
 
-            // Create a container to adjust the difference between HoloLens' origin and HEVS' origin
-            Transform container = new GameObject("HoloLensContainer").transform;
+                    HoloLensConfig holoLens = null;
 
-            // Make the container the camera's parent
-            container.parent = camera.transform.parent;
-            camera.transform.parent = container;
+                    // HoloLens needs to be updated
+                    if (holoLensConfigs.ContainsKey(display))
+                        holoLens = holoLensConfigs[display];
+                    else
+                    {
+                        // Need a new tracker
+                        holoLens = new HoloLensConfig();
+                        holoLensConfigs.Add(display, holoLens);
+                    }
 
-            // Change position and direction
-            container.position = new Vector3(-camera.transform.localPosition.x, 0f, -camera.transform.localPosition.y);
-            container.eulerAngles = new Vector3(0f, -camera.transform.localEulerAngles.y, 0f);
-
-            // Other HoloLens setup
-            QualitySettings.SetQualityLevel(0); // TODO: could be costly
-            camera.clearFlags = CameraClearFlags.SolidColor;
-            camera.backgroundColor = new Color(0f, 0f, 0f, 0f);
-            camera.nearClipPlane = 0.85f;
+                    holoLens.ParseConfig(displayJSON);
+                }
+            }
         }
+
+        if (holoLensConfigs.Count > 0) { this.holoLensConfigs = holoLensConfigs; }
     }
+    #endregion
 
-    private bool IsRunningOnHoloLens()
+    // Adds Trackers and TransfromDisplays to new GameObjects
+    private void SetUpDisplayTrackers()
     {
-
-        // Get the holoLens display if it exists
-        var holoLens = platformJSON["displays"].Children.FirstOrDefault(i =>
+        foreach (var displayTracker in displayTrackerConfigs)
         {
-            var typeJSON = i["type"];
-
-            // Ignore if type is not holoLens
-            if (typeJSON == null || typeJSON.Value.ToLower() != "hololens")
-                return false;
-
-            // Return true if holoLens is on this node
-            string id = i["id"].Value.ToLower();
-            return NodeConfig.current.displays.Exists(j => j.id == id);
-        });
-        return holoLens != null;
-    }
-    
-    private void OnApplicationQuit()
-    {
-        if (_reciever != null)
-            _reciever.Close();
+            GameObject gameObject = new GameObject(displayTracker.Value + ", " + displayTracker.Key);
+            VRPNTracker tracker = gameObject.AddComponent<VRPNTracker>();
+            tracker.trackerID = displayTracker.Value.tracker.id;
+            TransformDisplay display = gameObject.AddComponent<TransformDisplay>();
+            display.displayIDs = new List<string>(1) { displayTracker.Key.id };
+        }
     }
 }

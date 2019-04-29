@@ -1,82 +1,38 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using HEVS;
 
-// Could make this inherit from ClusterTransform
-
-/// <summary>
-/// Transforms a display by this objects transform.
-/// </summary>
 public class TransformDisplay : MonoBehaviour
 {
-    /// <summary>
-    /// Threshold in metres to break before moving the display.
-    /// </summary>
-    public float positionThreshold;
-
-    /// <summary>
-    /// Threshold in degrees to break before rotating the display.
-    /// </summary>
-    public float rotationThreshold;
-
     // The id of the display to update
     public List<string> displayIDs;
     private StoredDisplay[] _displays;
 
-    // the last important transform
-    private Vector3 _position;
-    private Quaternion _rotation;
-
     // Start is called before the first frame update
-    new void Start()
+    void Start()
     {
-
         // Get all the displays using IDs
         _displays = displayIDs.Select(i => new StoredDisplay(NodeConfig.current.displays.First(j => j.id == i))).ToArray();
 
-        foreach (StoredDisplay display in _displays)
-        {
-            // Directly set starting transform
-            display.config.transform.translate = display.transform.translate + transform.position;
-            display.config.transform.rotate = display.transform.rotate * transform.rotation;
-        }
-
-        // Store initial transform
-        _position = transform.position;
-        _rotation = transform.rotation;
+        // Update the position and rotation
+        UpdateDisplays();
     }
 
     // Update is called once per frame
     void Update()
     {
-        // Update goals if either threshold is breached
-        if (Vector3.Distance(_position, transform.position) > positionThreshold ||
-            Quaternion.Angle(_rotation, transform.rotation) > rotationThreshold)
-        {
-            _position = transform.localPosition;
-            _rotation = transform.localRotation;
-        }
-
-        TransformDisplays(0.5f);
-
-        // TODO: this'll crash if the display touches the origin
+        // Update the position and rotation
+        UpdateDisplays();
     }
 
     /// <summary>
-    /// Lerps the display to its goal.
+    /// Update displays to match the transform.
     /// </summary>
-    /// <param name="t">Value between 0 and 1.</param>
-    private void TransformDisplays(float t)
+    public void UpdateDisplays()
     {
         foreach (StoredDisplay display in _displays)
-        {
-            display.config.transform.translate = Vector3.Lerp(display.config.transform.translate,
-                display.transform.translate + _position, t);
-            display.config.transform.rotate = Quaternion.Lerp(display.config.transform.rotate,
-                display.transform.rotate * _rotation, t);
-        }
+            display.Update(transform);
     }
 
     /// <summary>
@@ -90,17 +46,77 @@ public class TransformDisplay : MonoBehaviour
         public DisplayConfig config;
 
         /// <summary>
-        /// Store the original transform.
+        /// The original transform of the display.
         /// </summary>
-        public TransformData transform;
+        public TransformData originalTransform;
 
         /// <summary>
         /// Constructs a stored display, storing the original transform.
         /// </summary>
         /// <param name="config">The connected display.</param>
-        public StoredDisplay (DisplayConfig config) {
+        public StoredDisplay(DisplayConfig config)
+        {
             this.config = config;
-            transform = config.transform;
+            originalTransform = config.transform;
+
+            // TODO: Remove this
+            StartOffAxis();
         }
+
+        /// <summary>
+        /// Updates the display to use a game objects transfrom.
+        /// </summary>
+        /// <param name="transform">The transform to apply</param>
+        public void Update(Transform transform)
+        {
+            DisplayTrackerConfig constraints = config.TrackerConfig();
+
+            // Get the position ignoring locks
+            var translate = transform.position;
+            config.transform.translate = originalTransform.translate + new Vector3(
+                constraints.translateX ? translate.x : 0f,
+                constraints.translateY ? translate.y : 0f,
+                constraints.translateZ ? translate.z : 0f);
+
+            // Get the rotation ignoring locks
+            var euler = transform.rotation.eulerAngles;
+            config.transform.rotate = originalTransform.rotate * Quaternion.Euler(
+                constraints.rotateX ? euler.x : 0f,
+                constraints.rotateY ? euler.y : 0f,
+                constraints.rotateZ ? euler.z : 0f);
+
+            // TODO: Remove this
+            UpdateOffAxis();
+        }
+        
+        // TODO: remove this when OffAxis works
+        #region OffAxis
+        public Vector3 originalUL;
+        public Vector3 originalLL;
+        public Vector3 originalLR;
+
+        private void StartOffAxis()
+        {
+            if (config.type == DisplayType.OffAxis)
+            {
+                originalUL = config.offAxisData.ul;
+                originalLL = config.offAxisData.ll;
+                originalLR = config.offAxisData.lr;
+            }
+        }
+
+        private void UpdateOffAxis()
+        {
+            if (config.type == DisplayType.OffAxis)
+            {
+                config.offAxisData.ul = config.transform.rotate
+                    * (originalUL + config.transform.translate);
+                config.offAxisData.ll = config.transform.rotate
+                    * (originalLL + config.transform.translate);
+                config.offAxisData.lr = config.transform.rotate
+                    * (originalLR + config.transform.translate);
+            }
+        }
+        #endregion
     }
 }
