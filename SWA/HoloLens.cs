@@ -39,7 +39,7 @@ public class HoloLens
     {
         foreach (DisplayConfig config in NodeConfig.current.displays)
         {
-            if (SWAConfig.current.holoLensConfigs.ContainsKey(display))
+            if (SWAConfig.current.holoLensConfigs.ContainsKey(config))
             {
                 display = config;
                 break;
@@ -113,10 +113,13 @@ public class HoloLens
         if (_transmitter != null) _transmitter.Close();
 
         // Remove gestures
-        recognizer.Tapped -= GestureTapped;
-        recognizer.HoldStarted -= GestureHoldStarted;
-        recognizer.HoldCompleted -= GestureHoldCompleted;
-        recognizer.HoldCanceled -= GestureHoldCanceled;
+        if (recognizer != null)
+        {
+            recognizer.Tapped -= GestureTapped;
+            recognizer.HoldStarted -= GestureHoldStarted;
+            recognizer.HoldCompleted -= GestureHoldCompleted;
+            recognizer.HoldCanceled -= GestureHoldCanceled;
+        }
     }
 
     // Set up the HoloLens' camera
@@ -234,6 +237,8 @@ public class HoloLens
                 actualGesture = holoLens.gestures.Find(i => i.type == HoloLensConfig.GestureType.TAP);
                 break;
         }
+
+        Debug.Log(actualGesture);
 
         // Hold Gesture
         if (actualGesture.type == HoloLensConfig.GestureType.HOLD)

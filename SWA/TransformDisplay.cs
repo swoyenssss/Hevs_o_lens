@@ -13,7 +13,7 @@ public class TransformDisplay : MonoBehaviour
     void Start()
     {
         // Get all the displays using IDs
-        _displays = displayIDs.Select(i => new StoredDisplay(NodeConfig.current.displays.First(j => j.id == i))).ToArray();
+        _displays = displayIDs.Select(i => new StoredDisplay(PlatformConfig.current.displays.First(j => j.id == i))).ToArray(); //TODO:bad
 
         // Update the position and rotation
         UpdateDisplays();
@@ -58,9 +58,6 @@ public class TransformDisplay : MonoBehaviour
         {
             this.config = config;
             originalTransform = config.transform;
-
-            // TODO: Remove this
-            StartOffAxis();
         }
 
         /// <summary>
@@ -84,39 +81,6 @@ public class TransformDisplay : MonoBehaviour
                 constraints.rotateX ? euler.x : 0f,
                 constraints.rotateY ? euler.y : 0f,
                 constraints.rotateZ ? euler.z : 0f);
-
-            // TODO: Remove this
-            UpdateOffAxis();
         }
-        
-        // TODO: remove this when OffAxis works
-        #region OffAxis
-        public Vector3 originalUL;
-        public Vector3 originalLL;
-        public Vector3 originalLR;
-
-        private void StartOffAxis()
-        {
-            if (config.type == DisplayType.OffAxis)
-            {
-                originalUL = config.offAxisData.ul;
-                originalLL = config.offAxisData.ll;
-                originalLR = config.offAxisData.lr;
-            }
-        }
-
-        private void UpdateOffAxis()
-        {
-            if (config.type == DisplayType.OffAxis)
-            {
-                config.offAxisData.ul = config.transform.rotate
-                    * (originalUL + config.transform.translate);
-                config.offAxisData.ll = config.transform.rotate
-                    * (originalLL + config.transform.translate);
-                config.offAxisData.lr = config.transform.rotate
-                    * (originalLR + config.transform.translate);
-            }
-        }
-        #endregion
     }
 }

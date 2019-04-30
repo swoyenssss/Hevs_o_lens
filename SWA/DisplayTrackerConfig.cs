@@ -36,7 +36,7 @@ public class DisplayTrackerConfig
         // There are no translation or rotation locks
         if (jsonNode.Value != null)
         {
-            tracker = PlatformConfig.current.trackers.First(i => i.id == jsonNode["id"].Value);
+            tracker = PlatformConfig.current.trackers.First(i => i.id == jsonNode.Value.ToLower());
         }
         else
         {

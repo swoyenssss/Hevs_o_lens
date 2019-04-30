@@ -253,7 +253,7 @@ public class SWAConfig : MonoBehaviour
     {
         foreach (var displayTracker in displayTrackerConfigs)
         {
-            GameObject gameObject = new GameObject(displayTracker.Value + ", " + displayTracker.Key);
+            GameObject gameObject = new GameObject(displayTracker.Value.tracker.id + ", " + displayTracker.Key.id);
             VRPNTracker tracker = gameObject.AddComponent<VRPNTracker>();
             tracker.trackerID = displayTracker.Value.tracker.id;
             TransformDisplay display = gameObject.AddComponent<TransformDisplay>();
