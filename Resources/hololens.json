@@ -1,0 +1,54 @@
+{
+  "platforms": [
+    {
+      "id": "SingleDisplayWithHololens",
+	   "cluster": { "master": "desktop-slmumuk", "data_port": 4448, "sync_port": 4449, "packet_limit": 1048576,
+                   "auto_sync_rigid": true, "auto_sync_nonstatic": false, "disable_client_physics": true,
+                   "framelock": "software" },
+      
+      "nodes": [
+        { "id": "hololens-5u2gu", "address": "10.160.36.111", "display": "disp_hololens"},
+	{ "id": "desktop-slmumuk", "address": "10.160.99.173", "display": "disp_left", "resolution": [ 1920, 1080 ], "exclusive_fullscreen": true }
+       
+	  ],
+
+     "displays": [
+	   { "id": "disp_hololens", "type": "hololens"},
+        { "id": "disp_left", "type": "offaxis", "ul": [-1.055, 2.15, 2.77 ], "ll": [-1.055, 1.52, 2.77 ], "lr": [ 0.0, 1.52, 2.77 ], "viewport": "vp_left" }
+
+	]
+    },
+	
+	{
+      "id": "TwoNodes",
+
+      "cluster": { "master": "desktop-slmumuk", "data_port": 4448, "sync_port": 4449, "packet_limit": 1048576,
+                   "auto_sync_rigid": true, "auto_sync_nonstatic": false, "disable_client_physics": true,
+                   "framelock": "software" },
+      
+      "nodes": [
+	{ "id": "desktop-slmumuk", "address": "10.160.99.173", "display": "disp_left", "resolution": [ 1920, 1080 ], "exclusive_fullscreen": true },
+        { "id": "inm277286.uninet.unisa.edu.au", "address": "10.160.99.31", "display": "disp_right", "resolution": [ 1920, 1080 ], "exclusive_fullscreen": true }
+      ],
+
+      "displays": [
+        { "id": "disp_left", "type": "offaxis", "ul": [-1.77, 2.0, 3.0 ], "ll": [-1.77, 1.0, 3.0 ], "lr": [ 0.0, 1.0, 3.0 ], "viewport": "vp_left" },
+        { "id": "disp_right", "type": "offaxis", "ul": [0.0, 2.0, 3.0 ], "ll": [0.0, 1.0, 3.0 ], "lr": [ 1.77, 1.0, 3.0 ], "viewport": "vp_right" }
+      ]
+    },
+	
+	 {
+      "id": "JustHololens",
+	  
+      "nodes": [
+        { "id": "localhost", "display": "disp_hololens"}       
+	  ],
+
+     "displays": [
+	   { "id": "disp_hololens", "type": "hololens"}
+		]
+    },
+	
+	
+  ]
+}
