@@ -64,28 +64,32 @@ public class HoloLens
         {
             CreateTransmitter();
 
+            // Adds handler for HoloLens input
+            HEVS.Input.AccumulateCustomInput += HoloLensInput;
+
             // Add gesture recogniser if needed
-            HoloLensConfig holoLens = display.HoloLensData();
-            if (holoLens != null && holoLens.gestures.Count > 0)
+            HoloLensData holoLens = display.HoloLensData();
+            if (holoLens != null && holoLens.axesGestures.Count > 0)
             {
                 recognizer = new GestureRecognizer();
 
                 // The types of gestures to listen for
                 GestureSettings gestureMask = GestureSettings.None;
 
-                foreach (var gesture in holoLens.gestures)
+                foreach (var gesture in holoLens.buttonGestures)
                 {
                     switch (gesture.type)
                     {
-                        case HoloLensConfig.GestureType.TAP:
+                        case HoloLensData.ButtonGesture.Type.TAP:
                             gestureMask |= GestureSettings.Tap;
                             break;
 
-                        case HoloLensConfig.GestureType.DOUBLE_TAP:
+                        case HoloLensData.ButtonGesture.Type.DOUBLE_TAP:
                             gestureMask |= GestureSettings.DoubleTap;
                             break;
 
-                        case HoloLensConfig.GestureType.HOLD:
+                        case HoloLensData.ButtonGesture.Type.HOLD:
+                            gestureMask |= GestureSettings.Hold;
                             recognizer.HoldStarted += GestureHoldStarted;
                             recognizer.HoldCompleted += GestureHoldCompleted;
                             recognizer.HoldCanceled += GestureHoldCanceled;
@@ -93,8 +97,33 @@ public class HoloLens
                     }
                 }
 
-                if (gestureMask == GestureSettings.Tap || gestureMask == GestureSettings.DoubleTap)
+                if (gestureMask.HasFlag(GestureSettings.Tap) || gestureMask.HasFlag(GestureSettings.DoubleTap))
                     recognizer.Tapped += GestureTapped;
+
+                foreach (var gesture in holoLens.axesGestures)
+                {
+                    switch (gesture.type)
+                    {
+                        case HoloLensData.AxesGesture.Type.MANIPULATION:
+                            gestureMask |= GestureSettings.ManipulationTranslate;
+                            recognizer.ManipulationStarted += GestureManipulationStarted;
+                            recognizer.ManipulationCompleted += GestureManipulationCompleted;
+                            recognizer.ManipulationCanceled += GestureManipulationCanceled;
+                            recognizer.ManipulationUpdated += GestureManipulationUpdated; ;
+                            break;
+
+                        case HoloLensData.AxesGesture.Type.NAVIGATION:
+                            if (gesture.mappingsX.Count != 0) { gestureMask |= GestureSettings.NavigationX; }
+                            if (gesture.mappingsX.Count != 0) { gestureMask |= GestureSettings.NavigationY; }
+                            if (gesture.mappingsX.Count != 0) { gestureMask |= GestureSettings.NavigationZ; }
+                            recognizer.NavigationStarted += GestureNavigationStarted;
+                            recognizer.NavigationCompleted += GestureNavigationCompleted;
+                            recognizer.NavigationCanceled += GestureNavigationCanceled;
+                            recognizer.NavigationUpdated += GestureNavigationUpdated; ;
+                            break;
+                    }
+                }
+
 
                 // Start the recogniser
                 recognizer.SetRecognizableGestures(gestureMask);
@@ -134,7 +163,7 @@ public class HoloLens
     // Set up the HoloLens' camera
     private void SetUpHoloLens()
     {
-        HoloLensConfig holoLens = display.HoloLensData();
+        HoloLensData holoLens = display.HoloLensData();
 
         // Get the holoLens' camera's transform
         UnityEngine.Camera camera = UnityEngine.Camera.main;
@@ -147,7 +176,7 @@ public class HoloLens
         camera.transform.parent = container;
 
         // Change position and direction
-        if (holoLens.origin == HoloLensConfig.OriginType.START_LOCATION)
+        if (holoLens.origin == HoloLensData.OriginType.START_LOCATION)
         {
             container.position = -camera.transform.position * holoLens.scale;
             container.eulerAngles = new Vector3(0f, -camera.transform.localEulerAngles.y, 0f);
@@ -172,7 +201,7 @@ public class HoloLens
     private void CreateTransmitter()
     {
         // Create and start the transmitter
-        _transmitter = new UDPTransmitter("10.160.99.173"/*Cluster.masterNode.address*/, SWAConfig.current.holoPort);
+        _transmitter = new UDPTransmitter("10.160.99.31"/*Cluster.masterNode.address*/, SWAConfig.current.holoPort);
         _transmitter.Connect();
     }
 
@@ -199,67 +228,116 @@ public class HoloLens
         _transmitter.Send(msg);
     }
 
-    private void GestureHoldCanceled(HoldCanceledEventArgs args)
-    { SendGesture("hold_canceled"); }
+    private void GestureHoldStarted(HoldStartedEventArgs args)
+    { SendButtonGesture("hold_started"); }
 
     private void GestureHoldCompleted(HoldCompletedEventArgs args)
-    { SendGesture("hold_completed"); }
-
-    private void GestureHoldStarted(HoldStartedEventArgs args)
-    { SendGesture("hold_started"); }
-
+    { SendButtonGesture("hold_ended"); }
+    private void GestureHoldCanceled(HoldCanceledEventArgs args)
+    { SendButtonGesture("hold_ended"); }
+    
     private void GestureTapped(TappedEventArgs args)
     {
-        if (args.tapCount == 1) { SendGesture("tap"); }
-        else { SendGesture("double_tap"); }
+        if (args.tapCount == 1) { SendButtonGesture("tap"); }
+        else { SendButtonGesture("double_tap"); }
     }
 
-    private void SendGesture(string gesture)
+    private void SendButtonGesture(string gesture)
     {
-        Debug.Log(gesture);
-
-        // Message with address "/id/transform"
-        OscMessage msg = new OscMessage("/" + display.id + "/gesture");
+        // Message with address "/id/button_gesture"
+        OscMessage msg = new OscMessage("/" + display.id + "/button_gesture");
 
         // Set the gesture
         msg.Append(gesture);
+        
+        // Send the transform data to master
+        _transmitter.Send(msg);
+    }
+
+    // Manipulation Started
+    private void GestureManipulationStarted(ManipulationStartedEventArgs args)
+    { SendAxesGesture("manipulation", Vector3.zero); }
+
+    private void GestureManipulationUpdated(ManipulationUpdatedEventArgs args)
+    { SendAxesGesture("manipulation", args.cumulativeDelta); }
+
+    // Manipulation Ended
+    private void GestureManipulationCanceled(ManipulationCanceledEventArgs args)
+    { SendAxesGesture("manipulation", Vector3.zero); }
+    private void GestureManipulationCompleted(ManipulationCompletedEventArgs args)
+    { SendAxesGesture("manipulation", Vector3.zero); }
+
+    // Navigation Started
+    private void GestureNavigationStarted(NavigationStartedEventArgs args)
+    { SendAxesGesture("navigation", Vector3.zero); }
+
+    private void GestureNavigationUpdated(NavigationUpdatedEventArgs args)
+    { SendAxesGesture("navigation", args.normalizedOffset); }
+
+    // Navigation Ended
+    private void GestureNavigationCanceled(NavigationCanceledEventArgs args)
+    { SendAxesGesture("navigation", Vector3.zero); }
+    private void GestureNavigationCompleted(NavigationCompletedEventArgs args)
+    { SendAxesGesture("navigation", Vector3.zero); }
+
+    private void SendAxesGesture(string gesture, Vector3 axes)
+    {
+        // Message with address "/id/axes_gesture"
+        OscMessage msg = new OscMessage("/" + display.id + "/axes_gesture");
+
+        // Set the gesture
+        msg.Append(gesture);
+        msg.Append(axes.x);
+        msg.Append(axes.y);
+        msg.Append(axes.z);
 
         // Send the transform data to master
         _transmitter.Send(msg);
     }
+
     #endregion
 #endif
 
     #region Receiver for Master
-    private static void ReceiveGesture(HoloLensConfig holoLens, string gesture)
+    private static void ReceiveButtonGesture(HoloLensData holoLens, string gesture)
     {
-        HoloLensConfig.Gesture actualGesture = null;
+        HoloLensData.ButtonGesture actualGesture = null;
 
         switch (gesture)
         {
+            case "tap":
+                actualGesture = holoLens.buttonGestures.Find(i => i.type == HoloLensData.ButtonGesture.Type.TAP);
+                actualGesture.performed = true;
+                break;
             case "double_tap":
-                actualGesture = holoLens.gestures.Find(i => i.type == HoloLensConfig.GestureType.DOUBLE_TAP);
+                actualGesture = holoLens.buttonGestures.Find(i => i.type == HoloLensData.ButtonGesture.Type.DOUBLE_TAP);
+                actualGesture.performed = true;
                 break;
             case "hold_started":
-            case "hold_complete":
-            case "hold_canceled":
-                actualGesture = holoLens.gestures.Find(i => i.type == HoloLensConfig.GestureType.HOLD);
+                actualGesture = holoLens.buttonGestures.Find(i => i.type == HoloLensData.ButtonGesture.Type.HOLD);
+                actualGesture.performed = true;
                 break;
-            default:
-                actualGesture = holoLens.gestures.Find(i => i.type == HoloLensConfig.GestureType.TAP);
+            case "hold_ended":
+                actualGesture = holoLens.buttonGestures.Find(i => i.type == HoloLensData.ButtonGesture.Type.HOLD);
+                actualGesture.performed = false;
                 break;
         }
+    }
+
+    private static void ReceiveAxesGesture(HoloLensData holoLens, string gesture, Vector3 axes)
+    {
+        HoloLensData.AxesGesture actualGesture = null;
         
-        // Hold Gesture
-        if (actualGesture.type == HoloLensConfig.GestureType.HOLD)
+        switch (gesture)
         {
-            // Simple gestures
-            //foreach (string mapping in actualGesture.mappings) { }
-        }
-        else
-        {
-            // Simple gestures
-            //foreach (string mapping in actualGesture.mappings) { }
+            case "manipulation":
+                actualGesture = holoLens.axesGestures.Find(i => i.type == HoloLensData.AxesGesture.Type.MANIPULATION);
+                actualGesture.axes = axes;
+                break;
+            case "navigation":
+                actualGesture = holoLens.axesGestures.Find(i => i.type == HoloLensData.AxesGesture.Type.NAVIGATION);
+                actualGesture.axes = axes;
+                break;
         }
     }
 
@@ -279,7 +357,6 @@ public class HoloLens
     private static void MessageReceived(object sender, OscMessageReceivedEventArgs oscMessageReceivedEventArgs)
     {
         OscMessage message = oscMessageReceivedEventArgs.Message;
-        Debug.Log(message.Address);
 
         // Read the address part by part
         string[] address = message.Address.TrimStart('/').Split('/');
@@ -293,13 +370,16 @@ public class HoloLens
             switch (address[1])
             {
                 case "transform":
-                    Debug.Log("Receive Transform");
                     // Store the transform
                     display.transform.translate = new Vector3((float)message.Data[0], (float)message.Data[1], (float)message.Data[2]);
                     display.transform.rotate = new Quaternion((float)message.Data[3], (float)message.Data[4], (float)message.Data[5], (float)message.Data[6]);
                     break;
-                case "gesture":
-                    ReceiveGesture(display.HoloLensData(), (string)message.Data[0]);
+                case "button_gesture":
+                    ReceiveButtonGesture(display.HoloLensData(), (string)message.Data[0]);
+                    break;
+                case "axes_gesture":
+                    ReceiveAxesGesture(display.HoloLensData(), (string)message.Data[0],
+                        new Vector3((float)message.Data[1], (float)message.Data[2], (float)message.Data[3]));
                     break;
             }
         }
@@ -311,4 +391,40 @@ public class HoloLens
         Debug.Log("HoloLens OSC Error: " + exceptionEventArgs.ToString());
     }
 #endregion
+
+    private void HoloLensInput ()
+    {
+        foreach (HoloLensData holoLens in SWAConfig.current.holoLensConfigs.Values)
+        {
+            // Gesture button input
+            foreach (var gesture in holoLens.buttonGestures)
+            {
+                if (gesture.performed)
+                {
+                    if (gesture.type != HoloLensData.ButtonGesture.Type.HOLD)
+                        gesture.performed = false;
+
+                    foreach (string mapping in gesture.mappings)
+                        HEVS.Input.ForceButtonThisFrame(mapping);
+                }
+            }
+
+            // Gesture axes input
+            foreach (var gesture in holoLens.axesGestures)
+            {
+
+                // Set x axis
+                foreach (string mappingX in gesture.mappingsX)
+                    HEVS.Input.AccumulateAxisThisFrame(mappingX, gesture.axes.x);
+
+                // Set y axis
+                foreach (string mappingY in gesture.mappingsY)
+                    HEVS.Input.AccumulateAxisThisFrame(mappingY, gesture.axes.y);
+
+                // Set z axis
+                foreach (string mappingZ in gesture.mappingsZ)
+                    HEVS.Input.AccumulateAxisThisFrame(mappingZ, gesture.axes.z);
+            }
+        }
+    }
 }

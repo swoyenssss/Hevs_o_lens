@@ -13,7 +13,7 @@ public class TransformDisplay : MonoBehaviour
     void Start()
     {
         // Get all the displays using IDs
-        _displays = displayIDs.Select(i => new StoredDisplay(PlatformConfig.current.displays.First(j => j.id == i))).ToArray(); //TODO:bad
+        _displays = displayIDs.Select(i => new StoredDisplay(PlatformConfig.current.displays.First(j => j.id == i))).ToArray();
 
         // Update the position and rotation
         UpdateDisplays();
@@ -43,7 +43,11 @@ public class TransformDisplay : MonoBehaviour
         /// <summary>
         /// The connected display.
         /// </summary>
-        public DisplayConfig config;
+        public DisplayTrackerConfig config;
+
+        /// <summary>
+        /// </summary>
+        public DisplayConfig display;
 
         /// <summary>
         /// The original transform of the display.
@@ -54,10 +58,12 @@ public class TransformDisplay : MonoBehaviour
         /// Constructs a stored display, storing the original transform.
         /// </summary>
         /// <param name="config">The connected display.</param>
-        public StoredDisplay(DisplayConfig config)
+        public StoredDisplay(DisplayConfig display)
         {
-            this.config = config;
-            originalTransform = config.transform;
+            this.display = display;
+            originalTransform = display.transform;
+
+            config = SWAConfig.current.displayTrackerConfigs.Find(i => i.display == display);
         }
 
         /// <summary>
@@ -66,21 +72,19 @@ public class TransformDisplay : MonoBehaviour
         /// <param name="transform">The transform to apply</param>
         public void Update(Transform transform)
         {
-            DisplayTrackerConfig constraints = config.TrackerConfig();
-
             // Get the position ignoring locks
             var translate = transform.position;
-            config.transform.translate = originalTransform.translate + new Vector3(
-                constraints.translateX ? translate.x : 0f,
-                constraints.translateY ? translate.y : 0f,
-                constraints.translateZ ? translate.z : 0f);
+            config.display.transform.translate = originalTransform.translate + new Vector3(
+                config.translateX ? translate.x : 0f,
+                config.translateY ? translate.y : 0f,
+                config.translateZ ? translate.z : 0f);
 
             // Get the rotation ignoring locks
             var euler = transform.rotation.eulerAngles;
-            config.transform.rotate = originalTransform.rotate * Quaternion.Euler(
-                constraints.rotateX ? euler.x : 0f,
-                constraints.rotateY ? euler.y : 0f,
-                constraints.rotateZ ? euler.z : 0f);
+            config.display.transform.rotate = originalTransform.rotate * Quaternion.Euler(
+                config.rotateX ? euler.x : 0f,
+                config.rotateY ? euler.y : 0f,
+                config.rotateZ ? euler.z : 0f);
         }
     }
 }
