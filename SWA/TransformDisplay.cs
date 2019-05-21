@@ -5,15 +5,19 @@ using HEVS;
 
 public class TransformDisplay : MonoBehaviour
 {
-    // The id of the display to update
+    /// <summary>
+    /// The id of the display to update.
+    /// </summary>
     public List<string> displayIDs;
+
+    // The actual disply and its original transform
     private StoredDisplay[] _displays;
 
     // Start is called before the first frame update
     void Start()
     {
         // Get all the displays using IDs
-        _displays = displayIDs.Select(i => new StoredDisplay(PlatformConfig.current.displays.First(j => j.id == i))).ToArray();
+        _displays = displayIDs.Select(i => new StoredDisplay(PlatformConfig.current.displays.Find(j => j.id == i))).ToArray();
 
         // Update the position and rotation
         UpdateDisplays();
@@ -41,11 +45,7 @@ public class TransformDisplay : MonoBehaviour
     private class StoredDisplay
     {
         /// <summary>
-        /// The connected display.
-        /// </summary>
-        public DisplayTrackerConfig config;
-
-        /// <summary>
+        /// The display to store.
         /// </summary>
         public DisplayConfig display;
 
@@ -62,8 +62,6 @@ public class TransformDisplay : MonoBehaviour
         {
             this.display = display;
             originalTransform = display.transform;
-
-            config = SWAConfig.current.displayTrackerConfigs.Find(i => i.display == display);
         }
 
         /// <summary>
@@ -73,18 +71,10 @@ public class TransformDisplay : MonoBehaviour
         public void Update(Transform transform)
         {
             // Get the position ignoring locks
-            var translate = transform.position;
-            config.display.transform.translate = originalTransform.translate + new Vector3(
-                config.translateX ? translate.x : 0f,
-                config.translateY ? translate.y : 0f,
-                config.translateZ ? translate.z : 0f);
+            display.transform.translate = originalTransform.translate + transform.position;
 
             // Get the rotation ignoring locks
-            var euler = transform.rotation.eulerAngles;
-            config.display.transform.rotate = originalTransform.rotate * Quaternion.Euler(
-                config.rotateX ? euler.x : 0f,
-                config.rotateY ? euler.y : 0f,
-                config.rotateZ ? euler.z : 0f);
+            display.transform.rotate = originalTransform.rotate * transform.rotation;
         }
     }
 }
