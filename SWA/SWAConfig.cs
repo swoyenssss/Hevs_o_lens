@@ -103,7 +103,7 @@ public class SWAConfig : MonoBehaviour
         }
 #endif
         
-        Debug.Log(HEVS.Input.GetAxis("Horizontal") + ", " + HEVS.Input.GetAxis("Depth") + ", " + HEVS.Input.GetAxis("Vertical"));
+
     }
 
     public void OnDestroy()
@@ -130,14 +130,14 @@ public class SWAConfig : MonoBehaviour
     {
         // For creating the trackers
         displayTrackerConfigs = new List<DisplayTrackerConfig>();
-
+        
         // No need to continue if there are no display trackers
-        if (!PlatformConfig.current.globals.ContainsKey("displayTrackers")) { return; }
+        if (!PlatformConfig.current.globals.ContainsKey("display_trackers")) { return; }
 
-        foreach (var dictionary in (Dictionary<string, object>[])PlatformConfig.current.globals["displayTrackers"])
+        foreach (var dictionary in (object[])PlatformConfig.current.globals["display_trackers"])
         {
             DisplayTrackerConfig config = new DisplayTrackerConfig();
-            config.ParseConfig(dictionary);
+            config.ParseConfig((Dictionary<string,object>)dictionary);
             displayTrackerConfigs.Add(config);
         }
     }

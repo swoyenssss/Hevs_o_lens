@@ -127,11 +127,8 @@ public class HoloLensData : DisplayData
                 }
 
                 gesture.mappingsX = GetMappings(gestureJSON["mapping_x"]);
-                Debug.Log(gesture.mappingsX[0]);
                 gesture.mappingsY = GetMappings(gestureJSON["mapping_y"]);
-                Debug.Log(gesture.mappingsY[0]);
                 gesture.mappingsZ = GetMappings(gestureJSON["mapping_z"]);
-                Debug.Log(gesture.mappingsZ[0]);
             }
         }
     }

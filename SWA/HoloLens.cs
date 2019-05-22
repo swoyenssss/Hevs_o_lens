@@ -50,6 +50,12 @@ public class HoloLens
                 break;
             }
         }
+
+        // Receiver if this is the master
+        if (Cluster.isMaster) { CreateReceiver(); }
+
+        // Adds handler for HoloLens input
+        HEVS.Input.AccumulateCustomInput += HoloLensInput;
     }
 
 #region Enable and Disable
@@ -63,9 +69,6 @@ public class HoloLens
         if (display != null)
         {
             CreateTransmitter();
-
-            // Adds handler for HoloLens input
-            HEVS.Input.AccumulateCustomInput += HoloLensInput;
 
             // Add gesture recogniser if needed
             HoloLensData holoLens = display.HoloLensData();
@@ -133,9 +136,6 @@ public class HoloLens
             SetUpHoloLens();
         }
 #endif
-
-        // Receiver if this is the master
-        if (Cluster.isMaster) { CreateReceiver(); }
     }
 
     // Turns off the receiver/transmitter
@@ -157,7 +157,6 @@ public class HoloLens
             recognizer.HoldCompleted -= GestureHoldCompleted;
             recognizer.HoldCanceled -= GestureHoldCanceled;
         }
-#endif
     }
 
     // Set up the HoloLens' camera
@@ -180,6 +179,11 @@ public class HoloLens
         {
             container.position = -camera.transform.position * holoLens.scale;
             container.eulerAngles = new Vector3(0f, -camera.transform.localEulerAngles.y, 0f);
+
+            // Create world anchor
+            WorldAnchor worldAnchor = new GameObject("WorldAnchor").AddComponent<WorldAnchor>();
+            worldAnchor.transform.position = camera.transform.position;
+            worldAnchor.transform.rotation = camera.transform.rotation;
         }
 
         container.localScale = new Vector3(holoLens.scale, holoLens.scale, holoLens.scale);
@@ -192,16 +196,17 @@ public class HoloLens
         // Adjust the quality if running locally
         if (holoLens.remote == null) QualitySettings.SetQualityLevel(0);
     }
+#endif
 
-    #endregion
+        #endregion
 
 #if UNITY_WSA
-    #region Transmitter to Master
+        #region Transmitter to Master
     // Create the transmitter object
     private void CreateTransmitter()
     {
         // Create and start the transmitter
-        _transmitter = new UDPTransmitter("10.160.99.31"/*Cluster.masterNode.address*/, SWAConfig.current.holoPort);
+        _transmitter = new UDPTransmitter("192.168.0.100"/*Cluster.masterNode.address*/, SWAConfig.current.holoPort);
         _transmitter.Connect();
     }
 
@@ -295,11 +300,11 @@ public class HoloLens
         _transmitter.Send(msg);
     }
 
-    #endregion
+        #endregion
 #endif
 
-    #region Receiver for Master
-    private static void ReceiveButtonGesture(HoloLensData holoLens, string gesture)
+        #region Receiver for Master
+        private static void ReceiveButtonGesture(HoloLensData holoLens, string gesture)
     {
         HoloLensData.ButtonGesture actualGesture = null;
 
@@ -388,7 +393,7 @@ public class HoloLens
     // Handles OSC errors
     private static void OscErrorOccured(object sender, ExceptionEventArgs exceptionEventArgs)
     {
-        Debug.Log("HoloLens OSC Error: " + exceptionEventArgs.ToString());
+        Debug.LogError("HoloLens OSC Error: " + exceptionEventArgs.ToString());
     }
 #endregion
 
