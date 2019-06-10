@@ -213,10 +213,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6317ad5121ef90740b832f0aec07b804, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  syncPosition: 1
-  syncRotation: 1
-  syncLocalScale: 1
   displayID: disp_hololens
+  disableIfNotFound: 1
 --- !u!114 &330598764
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -230,6 +228,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   clusterID: -1
+  transformFlags: -1
 --- !u!4 &330598765
 Transform:
   m_ObjectHideFlags: 0
@@ -335,7 +334,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7ee7d6befac9ce6478fa8e8daf44b1bf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &961124167
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 961124165}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca96e2d91e5ddf542bba02c9c9fe105f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
   holoPort: 6668
+--- !u!114 &961124168
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 961124165}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ee7d6befac9ce6478fa8e8daf44b1bf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &1137440827
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -411,12 +434,12 @@ PrefabInstance:
     - target: {fileID: 3605175694794404757, guid: 5ea64eeeefe9dab42b6079e278be5913,
         type: 3}
       propertyPath: selectedPlatform
-      value: quad_display_with_hololens
+      value: penta_display_with_hololens
       objectReference: {fileID: 0}
     - target: {fileID: 3605175694794404757, guid: 5ea64eeeefe9dab42b6079e278be5913,
         type: 3}
       propertyPath: selectedNode
-      value: inm275559
+      value: hololens-5u2gu
       objectReference: {fileID: 0}
     - target: {fileID: 3605175694794404757, guid: 5ea64eeeefe9dab42b6079e278be5913,
         type: 3}

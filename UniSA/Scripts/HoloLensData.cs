@@ -1,11 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using HEVS;
-using UnityEngine.XR.WSA;
+﻿using System.Collections.Generic;
 using System.Linq;
 using SimpleJSON;
-using System;
 
 namespace HEVS.UniSA
 {
@@ -23,6 +18,31 @@ namespace HEVS.UniSA
         public OriginType origin;
 
         /// <summary>
+        /// If the world anchor should be synchronised with other HoloLenses.
+        /// </summary>
+        public bool shareOrigin = true;
+
+        /// <summary>
+        /// Should stored a world anchor be loaded if it exists.
+        /// </summary>
+        public bool storeOrigin = true;
+
+        /// <summary>
+        /// If the background should be hidden.
+        /// </summary>
+        public bool disableBackground = true;
+
+        /// <summary>
+        /// If real world objects should cull.
+        /// </summary>
+        public bool cullMesh = true;
+
+        /// <summary>
+        /// The clipping plane for the HoloLens' camera.
+        /// </summary>
+        public float clippingPlane = 0.85f;
+
+        /// <summary>
         /// The information for holographic remoting.
         /// </summary>
         public Remote remote;
@@ -38,31 +58,65 @@ namespace HEVS.UniSA
         public List<DisplayConfig> drawDisplays = new List<DisplayConfig>();
 
         /// <summary>
-        /// The gestures to use from the HoloLens.
+        /// The tracker to be used as the holoLens.
         /// </summary>
-        public List<ButtonGesture> buttonGestures = new List<ButtonGesture>();
+        public TrackerConfig tracker;
 
         /// <summary>
-        /// The gestures to use from the HoloLens.
+        /// The tracker to be used as the left hand.
         /// </summary>
-        public List<AxesGesture> axesGestures = new List<AxesGesture>();
+        public TrackerConfig leftHandTracker;
 
+        /// <summary>
+        /// The tracker to be used as the right.
+        /// </summary>
+        public TrackerConfig rightHandTracker;
+
+        /// <summary>
+        /// The tracker to be used as the curser.
+        /// </summary>
+        public TrackerConfig cursorTracker;
+
+        /// <summary>
+        /// The display type.
+        /// </summary>
         public DisplayType type { get { return DisplayType.UserDefined; } }
-
         #endregion
 
         #region Create the HoloLens Config
 
+        /// <summary>
+        /// Constructs an empty holoLens data object.
+        /// </summary>
         public HoloLensData() { }
 
+        /// <summary>
+        /// Parses json data into the holoLens data.
+        /// </summary>
+        /// <param name="json">JSONNode of the display.</param>
         public void ParseJson(JSONNode json)
         {
+            if (json["clipping_plane"] != null) clippingPlane = json["clipping_plane"].AsFloat;
+            if (json["disable_background"] != null) disableBackground = json["disable_background"].AsBool;
+            if (json["share_origin"] != null) shareOrigin = json["share_origin"].AsBool;
+            if (json["store_origin"] != null) storeOrigin = json["store_origin"].AsBool;
+            if (json["cull_mesh"] != null) cullMesh = json["cull_mesh"].AsBool;
+
+            // Choose how the origin is set
             if (json["origin"] != null)
             {
                 switch (json["origin"].Value)
                 {
                     case "start_location":
                         origin = OriginType.START_LOCATION;
+                        break;
+
+                    case "choose_origin":
+                        origin = OriginType.CHOOSE_ORIGIN;
+                        break;
+
+                    case "find_origin":
+                        origin = OriginType.FIND_MARKER;
                         break;
                 }
             }
@@ -91,143 +145,52 @@ namespace HEVS.UniSA
             if (json["draw_displays"] != null)
             {
                 var drawDisplaysJSON = json["draw_displays"].AsArray;
-                
+
                 // Add each cull display
                 foreach (var display in drawDisplaysJSON.Children)
                     drawDisplays.Add(PlatformConfig.current.displays.Find(i => i.id == display.Value));
             }
 
-            if (json["button_gestures"] != null)
-            {
-                foreach (var gestureJSON in json["button_gestures"].Children)
-                {
-                    // Get existing gesture
-                    ButtonGesture gesture = new ButtonGesture(); // TODO: dont repeat gestures
-                    buttonGestures.Add(gesture);
-
-                    // Set the type
-                    switch (gestureJSON["type"].Value)
-                    {
-                        case "tap":
-                            gesture.type = ButtonGesture.Type.TAP;
-                            break;
-
-                        case "double_tap":
-                            gesture.type = ButtonGesture.Type.DOUBLE_TAP;
-                            break;
-
-                        case "hold":
-                            gesture.type = ButtonGesture.Type.HOLD;
-                            break;
-                    }
-
-                    gesture.mappings = GetMappings(gestureJSON["mapping"]);
-                }
-            }
-
-            if (json["axes_gestures"] != null)
-            {
-                foreach (var gestureJSON in json["axes_gestures"].Children)
-                {
-                    // Get existing gesture
-                    AxesGesture gesture = new AxesGesture(); // TODO: dont repeat gestures
-                    axesGestures.Add(gesture);
-
-                    // Set the type
-                    switch (gestureJSON["type"].Value)
-                    {
-                        case "manipulation":
-                            gesture.type = AxesGesture.Type.MANIPULATION;
-                            break;
-
-                        case "navigation":
-                            gesture.type = AxesGesture.Type.NAVIGATION;
-                            break;
-                    }
-
-                    gesture.mappingsX = GetMappings(gestureJSON["mapping_x"]);
-                    gesture.mappingsY = GetMappings(gestureJSON["mapping_y"]);
-                    gesture.mappingsZ = GetMappings(gestureJSON["mapping_z"]);
-                }
-            }
+            // Get all the relevant trackers
+            if (json["tracker"] != null) tracker = PlatformConfig.current.trackers.Find(i => i.id == json["tracker"].Value);
+            if (json["left_hand_tracker"] != null) leftHandTracker = PlatformConfig.current.trackers.Find(i => i.id == json["left_hand_tracker"].Value);
+            if (json["right_hand_tracker"] != null) rightHandTracker = PlatformConfig.current.trackers.Find(i => i.id == json["right_hand_tracker"].Value);
+            if (json["cursor_tracker"] != null) cursorTracker = PlatformConfig.current.trackers.Find(i => i.id == json["cursor_tracker"].Value);
+            // TODO: check if tracker is OSC
         }
 
-        private List<string> GetMappings(JSONNode mappingJSON)
-        {
-            // Only the one mapping
-            if (!string.IsNullOrEmpty(mappingJSON.Value))
-                return new List<string>(1) { mappingJSON.Value };
-
-            // Create new list of mappings
-            var mappings = new List<string>(mappingJSON.Count);
-
-            // Get the mappings
-            foreach (var mapping in mappingJSON.AsArray)
-                mappings.Add((string)mapping);
-
-            return mappings;
-        }
-
+        /// <summary>
+        /// Copies the values from another display data.
+        /// </summary>
+        /// <param name="original">The original display data.</param>
         public void Clone(DisplayData original)
         {
-            throw new System.NotImplementedException();
+            if (original is HoloLensData) return;
+            HoloLensData holoLensData = (HoloLensData)original;
+
+            origin = holoLensData.origin;
+
+            // Copy the remote
+            if (holoLensData.remote != null)
+            {
+                remote = new Remote();
+                remote.address = holoLensData.remote.address;
+                remote.maxBitRate = holoLensData.remote.maxBitRate;
+            }
+
+            // Copy the displays
+            cullDisplays = holoLensData.cullDisplays.ToList();
+            drawDisplays = holoLensData.drawDisplays.ToList();
+
+            // Copy the trackers
+            tracker = holoLensData.tracker;
+            leftHandTracker = holoLensData.leftHandTracker;
+            rightHandTracker = holoLensData.rightHandTracker;
+            cursorTracker = holoLensData.cursorTracker;
         }
         #endregion
 
         #region Enums and Other Classes
-
-        /// <summary>
-        /// Used to represent a gesture as input for a HoloLens
-        /// </summary>
-        public class ButtonGesture
-        {
-            /// <summary>
-            /// The type of gesture.
-            /// </summary>
-            public Type type;
-
-            public bool performed;
-
-            /// <summary>
-            /// The input mappings for the gestures
-            /// </summary>
-            public List<string> mappings;
-
-            public enum Type
-            {
-                TAP,
-                DOUBLE_TAP,
-                HOLD
-            }
-        }
-        /// <summary>
-        /// </summary>
-        public class AxesGesture
-        {
-            /// <summary>
-            /// </summary>
-            public Type type;
-
-            public Vector3 axes;
-
-            /// <summary>
-            /// </summary>
-            public List<string> mappingsX;
-
-            /// <summary>
-            /// </summary>
-            public List<string> mappingsY;
-
-            /// <summary>
-            /// </summary>
-            public List<string> mappingsZ;
-
-            public enum Type
-            {
-                MANIPULATION,
-                NAVIGATION
-            }
-        }
 
         /// <summary>
         /// Used for remote accessing a HoloLens
@@ -242,7 +205,7 @@ namespace HEVS.UniSA
             /// <summary>
             /// The maximum bit rate for sending data.
             /// </summary>
-            public int maxBitRate = 9999;
+            public int maxBitRate = 99999;
 
             /// <summary>
             /// Is the holoLens connected
@@ -254,13 +217,8 @@ namespace HEVS.UniSA
         {
             START_LOCATION,
             CHOOSE_ORIGIN,
-            FIND_ORIGIN
-        }
-
-
-        internal void ParseConfig(JSONNode json)
-        {
-            throw new NotImplementedException();
+            FIND_MARKER,
+            STAND_ON_ORIGN,
         }
         #endregion
     }

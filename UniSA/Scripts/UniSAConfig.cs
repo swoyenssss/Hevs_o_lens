@@ -1,15 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using HEVS;
-using System.IO;
-using SimpleJSON;
-#if UNITY_WSA
-using UnityEngine.XR;
-using UnityEngine.XR.WSA;
-#endif
-using System;
 
 namespace HEVS.UniSA
 {
@@ -21,8 +11,8 @@ namespace HEVS.UniSA
     /// </summary>
     public class UniSAConfig : MonoBehaviour
     {
-
         #region Variables
+
         /// <summary>
         /// The main extra config being used by all other classes.
         /// </summary>
@@ -35,18 +25,6 @@ namespace HEVS.UniSA
         /// <summary>
         /// </summary>
         public List<DynamicCameraConfig> dynamicCameraConfigs;
-        
-        /// <summary>
-        /// Links display id's to their HoloLens Config.
-        /// </summary>
-        public Dictionary<DisplayConfig, HoloLensData> holoLensConfigs;
-
-        /// <summary>
-        /// The port for sending holoLens 6Dof
-        /// </summary>
-        [HideInInspector]
-        public int holoPort = 6668;
-
         #endregion
 
         #region Unity Methods
@@ -58,16 +36,9 @@ namespace HEVS.UniSA
             // Read in all neccessary data
             ReadDynamicDisplayConfigs();
             ReadDynamicCameraConfigs();
-            ReadHoloLensConfigs();
- 
-            #region Set Up Dynamic Displays/Cameras
-
-            // Get the Holoport if it exists
-            if (PlatformConfig.current.globals.ContainsKey("holo_port"))
-                holoPort = (int)PlatformConfig.current.globals["holo_port"];
-
+            
             // For the tracking
-            var trackerById = new Dictionary<string, VRPNTracker>();
+            var trackerById = new Dictionary<string, TrackerManager>();
             Transform trackerParent = new GameObject("Trackers").transform;
             trackerParent.transform.parent = Camera.main.transform.parent;
 
@@ -79,39 +50,8 @@ namespace HEVS.UniSA
             foreach (var config in dynamicDisplayConfigs)
                 CreateDynamicDisplay(trackerById, config, trackerParent);
 
-            if (trackerParent.childCount == 0) { Destroy(trackerParent); }
-            #endregion
-
-            #region Set Up HoloLens
-
-            // Only create singleton if it will be used
-            if (holoLensConfigs != null)
-            {
-                // Master must have a holoLens object
-                if (Cluster.isMaster) HoloLens.current = new HoloLens();
-
-                // Client must have a holoLens device
-                foreach (DisplayConfig display in NodeConfig.current.displays)
-                {
-                    if (holoLensConfigs.ContainsKey(display))
-                    {
-                        HoloLensDevice.current = new HoloLensDevice(display);
-                        break;
-                    }
-                }
-            }
-            #endregion
-        }
-
-        private void Update()
-        {
-            if (HoloLensDevice.current != null) HoloLensDevice.current.Update();
-        }
-
-        private void OnDestroy()
-        {
-            if (HoloLensDevice.current != null) HoloLensDevice.current.Disable();
-            if (HoloLens.current != null) HoloLens.current.Disable();
+            // Don't need the tracker object if it has no trackers
+            if (trackerParent.childCount == 0) { Destroy(trackerParent.gameObject); }
         }
         #endregion
 
@@ -150,75 +90,40 @@ namespace HEVS.UniSA
                 dynamicCameraConfigs.Add(config);
             }
         }
-
-        // Loads the HoloLens configs fromm the json
-        private void ReadHoloLensConfigs()
-        {
-            // For creating the trackers
-            var holoLensConfigs = new Dictionary<DisplayConfig, HoloLensData>();
-
-            // Check every display of the platform
-            foreach (DisplayConfig display in PlatformConfig.current.displays)
-            {
-                if (display.json == null) { continue; }
-                JSONNode typeJSON = display.json["type"];
-
-                if (typeJSON != null && typeJSON.Value.ToLower() == "hololens")
-                {
-                    HoloLensData holoLens = new HoloLensData();
-                    holoLensConfigs.Add(display, holoLens);
-
-                    // TODO: Should not have to load scale
-                    if (display.json["transform"] != null && display.json["transform"]["scale"] != null)
-                    {
-                        var transformJSON = display.json["transform"];
-
-                        if (transformJSON["scale"] != null)
-                        {
-                            var scaleJSON = transformJSON["scale"].AsArray;
-                            display.transform.scale = new Vector3(scaleJSON[0].AsFloat, scaleJSON[1].AsFloat, scaleJSON[2].AsFloat);
-                        }
-                    }
-
-                    holoLens.ParseJson(display.json);
-                }
-            }
-
-            if (holoLensConfigs.Count > 0) { this.holoLensConfigs = holoLensConfigs; }
-        }
         #endregion
 
         #region Dynamic Displays/Cameras
         
         // Modifies the camera to be dynamic
-        private void CreateDynamicCamera(Dictionary<string, VRPNTracker> trackerById, DynamicCameraConfig config, Transform parent)
+        private void CreateDynamicCamera(Dictionary<string, TrackerManager> trackerById, DynamicCameraConfig config, Transform parent)
         {
-            UnityEngine.Camera camera = config.display.Camera();
-            if (camera == null) { return; }
+            Transform displayTransform = config.display.Transform();
 
             // Use a tracker if needed
             if (config.tracker != null)
             {
-                VRPNTracker tracker = GetTracker(trackerById, config.tracker, parent);
-                camera.transform.parent = tracker.gameObject.transform;
+                TrackerManager tracker = GetTracker(trackerById, config.tracker, parent);
+                displayTransform.parent = tracker.gameObject.transform;
             }
+            
+            config.display.cameraParent = displayTransform;
 
-            // TODO: This may not work properly if there is only one camera
-            camera.transform.localPosition = config.transform.translate;
-            camera.transform.localRotation = config.transform.rotate;
-            camera.transform.localScale = config.transform.scale;
+            // Update to have configs transforms
+            displayTransform.localPosition = config.transform.translate;
+            displayTransform.localRotation = config.transform.rotate;
+            displayTransform.localScale = config.transform.scale;
 
             // Create dynamic display
-            DynamicCamera dynamicCamera = camera.gameObject.AddComponent<DynamicCamera>();
+            DynamicCamera dynamicCamera = displayTransform.gameObject.AddComponent<DynamicCamera>();
             dynamicCamera.disableIfNotFound = false;
             dynamicCamera.displayID = config.display.id;
             dynamicCamera.cullInfront = config.cullInfront;
         }
 
         // Creates a dynamic display
-        private void CreateDynamicDisplay(Dictionary<string, VRPNTracker> trackerById, DynamicDisplayConfig config, Transform parent)
+        private void CreateDynamicDisplay(Dictionary<string, TrackerManager> trackerById, DynamicDisplayConfig config, Transform parent)
         {
-            VRPNTracker tracker = GetTracker(trackerById, config.tracker, parent);
+            TrackerManager tracker = GetTracker(trackerById, config.tracker, parent);
 
             // Create dynamic display
             DynamicDisplay dynamicDisplay = new GameObject(config.display.id + "-DynamicDisplay").AddComponent<DynamicDisplay>();
@@ -231,23 +136,16 @@ namespace HEVS.UniSA
             dynamicDisplay.transform.localScale = config.display.transform.scale;
         }
 
-        private VRPNTracker GetTracker(Dictionary<string, VRPNTracker> trackerById, VRPNTrackerConfig config, Transform parent)
+        private TrackerManager GetTracker(Dictionary<string, TrackerManager> trackerById, TrackerConfig config, Transform parent)
         {
             // Use tracker if it already exists
             if (trackerById.ContainsKey(config.id)) return trackerById[config.id];
 
             // Otherwise create new tracker
-            VRPNTracker tracker = new GameObject(config.id + "-Tracker").AddComponent<VRPNTracker>();
+            TrackerManager tracker = new GameObject(config.id + "-Tracker").AddComponent<TrackerManager>();
             tracker.transform.parent = parent;
             trackerById.Add(config.id, tracker);
-
-            // Set up the tracker
-            tracker.trackerID = config.id;
-            tracker.applyRotation = config.applyRotation;
-            tracker.deltaTransform = config.deltaTransform;
-            tracker.forward = config.forward;
-            tracker.right = config.right;
-            tracker.up = config.up;
+            tracker.id = config.id;
 
             return tracker;
         }

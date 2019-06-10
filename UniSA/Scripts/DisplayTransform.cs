@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Linq;
 
 namespace HEVS.UniSA
 {
@@ -7,7 +6,7 @@ namespace HEVS.UniSA
     /// <summary>
     /// Transforms to match a displays transform.
     /// </summary>
-    public class DisplayTransform : ClusterTransform
+    public class DisplayTransform : MonoBehaviour
     {
         /// <summary>
         /// The ID for the display's config.
@@ -23,9 +22,9 @@ namespace HEVS.UniSA
         private DisplayConfig _display;
 
         // Find the display
-        new void Start()
+        void Start()
         {
-            base.Start();
+            gameObject.AddComponent<ClusterObject>();
             
             // Get the display and the camera
             _display = PlatformConfig.current.displays.Find(i => i.id == displayID);

@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace HEVS.UniSA
 {
@@ -29,7 +27,7 @@ namespace HEVS.UniSA
         private DisplayConfig _display;
 
         // The actual camera
-        private UnityEngine.Camera _camera;
+        private UnityEngine.Camera[] _cameras;
 
         // Start is called before the first frame update
         void Start()
@@ -38,8 +36,10 @@ namespace HEVS.UniSA
             _display = PlatformConfig.current.displays.Find(i => i.id == displayID);
 
             // Disable if needed
-            if (_display != null) _camera = _display.Camera();
-            else if (disableIfNotFound) gameObject.SetActive(false);
+            if (_display == null && disableIfNotFound) gameObject.SetActive(false);
+            
+            // Get all the cameras for the display
+            _cameras = _display.Transform().GetComponentsInChildren<UnityEngine.Camera>();
 
             Update();
         }
@@ -47,10 +47,51 @@ namespace HEVS.UniSA
         // Update is called once per frame
         void Update()
         {
-            if (_camera != null)
+            switch (_display.displayData.type)
             {
-                // TODO: probably only works for off axis
-                if (cullInfront) _camera.nearClipPlane = Vector3.Distance(_camera.transform.position, _display.transform.translate);
+                case DisplayType.Standard:
+                    if (cullInfront)
+                        foreach (UnityEngine.Camera camera in _cameras)
+                            camera.nearClipPlane = Vector3.Distance(camera.transform.position, _display.transform.translate);
+                    break;
+
+                case DisplayType.OffAxis:
+                    if (cullInfront)
+                    {
+                        OffAxisDisplayData offAxis = (OffAxisDisplayData)_display.displayData;
+
+                        Vector3 position = _display.transform.rotate * Vector3.Scale(_display.transform.scale, offAxis.center) + _display.transform.translate;
+
+                        foreach (UnityEngine.Camera camera in _cameras)
+                            camera.nearClipPlane = Vector3.Distance(camera.transform.position, position);
+                    }
+                    break;
+
+                case DisplayType.Dome:
+                    throw new System.NotImplementedException();
+
+                case DisplayType.Curved:
+                    throw new System.NotImplementedException();
+
+                    /*if (cullInfront)
+                    {
+                        CurvedDisplayData curved = (CurvedDisplayData)_display.displayData;
+
+                        //Vector3 position = _display.transform.rotate * Vector3.Scale(_display.transform.scale, curved.center) + _display.transform.translate;
+
+                        foreach (UnityEngine.Camera camera in _cameras) {
+
+                            // Line in the direction of the camera, where does that hit the curved display
+
+                            //curved.height * 0.5f;
+                            
+                            //camera.nearClipPlane = Vector3.Distance(camera.transform.position, position);
+                        }
+                    }
+                    break;*/
+
+                case DisplayType.AVIE:
+                    throw new System.NotImplementedException();
             }
         }
     }

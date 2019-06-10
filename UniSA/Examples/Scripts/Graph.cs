@@ -185,7 +185,7 @@ public class Graph : MonoBehaviour
         pos.z = 0;
 
         GameObject obj = (GameObject)Instantiate(_nodePrefab, pos, Quaternion.identity, transform);
-        obj.AddComponent<HEVS.ClusterTransform>();
+        obj.AddComponent<HEVS.ClusterObject>();
         obj.transform.SetAsFirstSibling();
         Node n = obj.GetComponent<Node>();
         n.pos = pos;

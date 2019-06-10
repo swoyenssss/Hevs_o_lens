@@ -6,8 +6,12 @@ using SimpleJSON;
 namespace HEVS.UniSA
 {
 
-    public class DynamicCameraConfig
+    public class DynamicCameraConfig : JSONConfigObject
     {
+        /// <summary>
+        /// The unique id of the dynamic camera config
+        /// </summary>
+        public string id;
 
         /// <summary>
         /// The display to be transformed.
@@ -17,12 +21,12 @@ namespace HEVS.UniSA
         /// <summary>
         /// 
         /// </summary>
-        public TransformData transform;
+        public TransformConfig transform;
 
         /// <summary>
         /// The tracker that will transform the camera.
         /// </summary>
-        public VRPNTrackerConfig tracker;
+        public TrackerConfig tracker;
 
         /// <summary>
         /// If objects infront of the camera should be visible;
@@ -31,16 +35,31 @@ namespace HEVS.UniSA
 
         public DynamicCameraConfig() { }
 
+        public object Clone()
+        {
+            DynamicCameraConfig clone = new DynamicCameraConfig();
+
+            clone.id = id;
+            clone.display = display;
+            clone.tracker = tracker;
+            clone.transform = (TransformConfig)transform.Clone();
+
+            return clone;
+        }
+
         /// <summary>
         /// Parses the config from a json.
         /// </summary>
         /// <param name="jsonNode">The dynamic display json.</param>
-        public void Parse(JSONNode jsonNode)
+        public bool Parse(JSONNode jsonNode)
         {
+            if (jsonNode["id"] != null) id = jsonNode["id"].Value; 
             if (jsonNode["tracker"] != null) tracker = PlatformConfig.current.trackers.Find(i => i.id == jsonNode["tracker"].Value);
             if (jsonNode["display"] != null) display = PlatformConfig.current.displays.Find(i => i.id == jsonNode["display"].Value);
             if (jsonNode["cull_infront"] != null) cullInfront = jsonNode["cull_infront"].AsBool;
             if (jsonNode["transform"] != null) transform.Parse(jsonNode["transform"]);
+
+            return true;
         }
 
         /// <summary>
@@ -49,7 +68,7 @@ namespace HEVS.UniSA
         /// <param name="jsonNode">The dynamic display as a dictionary.</param>
         public void Parse(Dictionary<string, object> dictionary)
         {
-            // Check for tracker a tracker
+            if (dictionary.ContainsKey("id")) id = (string)dictionary["id"];
             if (dictionary.ContainsKey("display")) display = PlatformConfig.current.displays.Find(i => i.id == (string)dictionary["display"]);
             if (dictionary.ContainsKey("tracker")) tracker = PlatformConfig.current.trackers.Find(i => i.id == (string)dictionary["tracker"]);
             if (dictionary.ContainsKey("cull_infront")) cullInfront = (bool)dictionary["cull_infront"];

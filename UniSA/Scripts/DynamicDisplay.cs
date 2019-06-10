@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-using HEVS;
+﻿using UnityEngine;
 
 namespace HEVS.UniSA
 {
@@ -11,6 +8,7 @@ namespace HEVS.UniSA
     /// </summary>
     public class DynamicDisplay : MonoBehaviour
     {
+
         /// <summary>
         /// The id of the display to update.
         /// </summary>
@@ -45,6 +43,8 @@ namespace HEVS.UniSA
                 _display.transform.rotate = transform.rotation;
                 _display.transform.scale = transform.lossyScale;
             }
+
+            // TODO: Curve display cameras do no get actively updated
         }
     }
 }

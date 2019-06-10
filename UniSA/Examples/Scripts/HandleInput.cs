@@ -25,8 +25,6 @@ public class HandleInput : MonoBehaviour
     {
         if (HEVS.Cluster.isMaster)
         {
-            Ray ray = new Ray(transform.position, transform.forward);
-
             RaycastHit[] hits = Physics.RaycastAll(transform.position, transform.forward);
             if (hits != null && hits.Length > 0)
             {
