@@ -12,7 +12,6 @@ namespace HEVS.UniSA.HoloLens
     /// </summary>
     internal class InputReader
     {
-
         // Stores all the input
         private Dictionary<InputType, object> _input;
 
@@ -33,21 +32,21 @@ namespace HEVS.UniSA.HoloLens
         public InputReader(TrackerConfig tracker, Handedness handedness = Handedness.NONE)
         {
             _input = new Dictionary<InputType, object>();
-            _gestureRecognizer = new GestureRecognizer();
             _handedness = handedness;
-            
-            // Get the gesture mask
-            GestureSettings gestureMask = GetGestureMask(tracker);
+
+#if UNITY_WSA
+            _gestureRecognizer = new UnityEngine.XR.WSA.Input.GestureRecognizer();
+            UnityEngine.XR.WSA.Input.GestureSettings gestureMask = GetGestureMask(tracker);
 
             // Using gestures
-            if (!gestureMask.HasFlag(GestureSettings.None))
+            if (!gestureMask.HasFlag(UnityEngine.XR.WSA.Input.GestureSettings.None))
             {
                 // Add tap to recognisor
-                if (gestureMask.HasFlag(GestureSettings.Tap) || gestureMask.HasFlag(GestureSettings.DoubleTap))
+                if (gestureMask.HasFlag(UnityEngine.XR.WSA.Input.GestureSettings.Tap) || gestureMask.HasFlag(UnityEngine.XR.WSA.Input.GestureSettings.DoubleTap))
                     _gestureRecognizer.Tapped += GestureTapped;
                 
                 // Add hold to recognisor
-                if (gestureMask.HasFlag(GestureSettings.Hold))
+                if (gestureMask.HasFlag(UnityEngine.XR.WSA.Input.GestureSettings.Hold))
                 {
                     _gestureRecognizer.HoldStarted += GestureHoldStarted;
                     _gestureRecognizer.HoldCompleted += GestureHoldCompleted;
@@ -55,7 +54,7 @@ namespace HEVS.UniSA.HoloLens
                 }
 
                 // Add manipulation to recognisor
-                if (gestureMask.HasFlag(GestureSettings.ManipulationTranslate))
+                if (gestureMask.HasFlag(UnityEngine.XR.WSA.Input.GestureSettings.ManipulationTranslate))
                 {
                     _gestureRecognizer.ManipulationStarted += GestureManipulationStarted;
                     _gestureRecognizer.ManipulationCompleted += GestureManipulationCompleted;
@@ -64,8 +63,8 @@ namespace HEVS.UniSA.HoloLens
                 }
 
                 // Add navigation to recognisor
-                if (gestureMask.HasFlag(GestureSettings.NavigationX) || gestureMask.HasFlag(GestureSettings.NavigationY)
-                    || gestureMask.HasFlag(GestureSettings.NavigationZ))
+                if (gestureMask.HasFlag(UnityEngine.XR.WSA.Input.GestureSettings.NavigationX) || gestureMask.HasFlag(UnityEngine.XR.WSA.Input.GestureSettings.NavigationY)
+                    || gestureMask.HasFlag(UnityEngine.XR.WSA.Input.GestureSettings.NavigationZ))
                 {
                     _gestureRecognizer.NavigationStarted += GestureNavigationStarted;
                     _gestureRecognizer.NavigationCompleted += GestureNavigationCompleted;
@@ -76,6 +75,7 @@ namespace HEVS.UniSA.HoloLens
                 _gestureRecognizer.SetRecognizableGestures(gestureMask);
                 _gestureRecognizer.StartCapturingGestures();
             }
+#endif
 
             // Using speech recognition
             _speechRecognizer = new DictationRecognizer();
@@ -113,7 +113,7 @@ namespace HEVS.UniSA.HoloLens
 
 #if UNITY_WSA
 
-        #region Taps and Hold
+#region Taps and Hold
 
         private void GestureTapped(TappedEventArgs args)
         {
@@ -130,9 +130,9 @@ namespace HEVS.UniSA.HoloLens
         { if (CorrectHand(args.source)) _input[InputType.HOLD] = false; }
         private void GestureHoldCanceled(HoldCanceledEventArgs args)
         { if (CorrectHand(args.source)) _input[InputType.HOLD] = false; }
-        #endregion
+#endregion
 
-        #region Manipulation
+#region Manipulation
 
         // Manipulation Started
         private void GestureManipulationStarted(ManipulationStartedEventArgs args)
@@ -165,9 +165,9 @@ namespace HEVS.UniSA.HoloLens
                 SetManipulation(0f, 0f, 0f);
             }
         }
-        #endregion
+#endregion
 
-        #region Navigation
+#region Navigation
 
         // Navigation Started
         private void GestureNavigationStarted(NavigationStartedEventArgs args)
@@ -200,15 +200,9 @@ namespace HEVS.UniSA.HoloLens
                 SetNavigation(0f, 0f, 0f);
             }
         }
-        #endregion
+#endregion
         
-        private void SpeechRecognition(string text, ConfidenceLevel confidence)
-        {
-            if (confidence != ConfidenceLevel.Rejected)
-                _input[InputType.SPEECH] = text;
-        }
-
-        #region Helpers
+#region Helpers
 
         private void SetManipulation(float x, float y, float z)
         {
@@ -269,7 +263,12 @@ namespace HEVS.UniSA.HoloLens
 
             return gestureMask;
         }
-        #endregion
+#endregion
 #endif
+
+        private void SpeechRecognition(string text, ConfidenceLevel confidence) {
+            if (confidence != ConfidenceLevel.Rejected)
+                _input[InputType.SPEECH] = text;
+        }
     }
 }

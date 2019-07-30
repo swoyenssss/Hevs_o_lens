@@ -9,11 +9,9 @@ using UnityEngine.XR.WSA.Persistence;
 using UnityEngine.XR.WSA.Sharing;
 #endif
 
-namespace HEVS.UniSA.HoloLens
-{
+namespace HEVS.UniSA.HoloLens {
 
-    internal class OriginController
-    {
+    internal class OriginController {
         #region Variables
 
         /// <summary>
@@ -28,88 +26,83 @@ namespace HEVS.UniSA.HoloLens
 
         // Used to find the origin
         private OriginFinder _originFinder;
-        
+
+#if UNITY_WSA
         // The world anchor for saving and storing world anchors
         private WorldAnchorStore _worldAnchorStore;
 
         // The world anchor to use
         private WorldAnchor _worldAnchor;
-        #endregion
+#endif
 
+        #endregion
+        
         /// <summary>
         /// Constructs an origin controller object.
         /// </summary>
         /// <param name="holoLens">The holoLens device.</param>
-        public OriginController(HoloLensDevice holoLens)
-        {
+        public OriginController(HoloLensDevice holoLens) {
             this.holoLens = holoLens;
 
+#if UNITY_WSA
             // Load world anchors or start now
             if (holoLens.display.HoloLensData().storeOrigin)
                 WorldAnchorStore.GetAsync(WorldAnchorStoreLoaded);
-            else
-                StartFinding();
-
+#endif
+            StartFinding();
         }
 
         /// <summary>
         /// Updates the Origin Controller.
         /// </summary>
-        public void Update()
-        {
-            if (!found && _originFinder != null)
-            {
+        public void Update() {
+            if (!found && _originFinder != null) {
                 // If the origin finder worked
-                if (_originFinder.TryGetOrigin(out Vector3 position, out Quaternion rotation))
+                if (_originFinder.TryGetOrigin(out Vector3 position, out Quaternion rotation)) {
+#if UNITY_WSA
                     SetWorldAnchor(CreateWorldAnchor(position, rotation));
+#else
+                    SetOrigin(position, rotation);
+#endif
+                }
             }
         }
 
         // Starts searching for the origin
-        private void StartFinding()
-        {
+        private void StartFinding() {
             // Set the origin finder
-            switch (holoLens.display.HoloLensData().origin)
-            {
-                case HoloLensData.OriginType.START_LOCATION:
-                    SetWorldAnchor(CreateWorldAnchor(holoLens.transform.position, Quaternion.Euler(0f, -holoLens.transform.localEulerAngles.y, 0f)));
-                    return;
+            switch (holoLens.display.HoloLensData().origin) {
 
+#if UNITY_WSA
                 case HoloLensData.OriginType.CHOOSE_ORIGIN:
-                    _originFinder = new OriginPointer(holoLens.transform);
-                    return;
+                _originFinder = new OriginPointer(holoLens.transform);
+                return;
+#endif
 
                 case HoloLensData.OriginType.FIND_MARKER:
-                    _originFinder = new OriginLocator(holoLens.transform);
-                    return;
+                _originFinder = new OriginLocator(holoLens.transform);
+                return;
+
+                default:
+#if UNITY_WSA
+                SetWorldAnchor(CreateWorldAnchor(holoLens.transform.position, Quaternion.Euler(0f, -holoLens.transform.localEulerAngles.y, 0f)));
+#else
+                SetOrigin(holoLens.transform.position, Quaternion.Euler(0f, -holoLens.transform.localEulerAngles.y, 0f));
+#endif
+                return;
             }
         }
 
-        #region Set World Anchor
+#if UNITY_WSA
+
+#region Set World Anchor
 
         // Sets the origin and direction for the holoLens
-        private void SetWorldAnchor(WorldAnchor worldAnchor)
-        {
+        private void SetWorldAnchor(WorldAnchor worldAnchor) {
             if (worldAnchor == null) { return; }
             _worldAnchor = worldAnchor;
-
-            Transform container = holoLens.transform.parent;
-
-            // Reverse the current transform
-            container.position = -worldAnchor.transform.position;
-            container.rotation = Quaternion.Inverse(worldAnchor.transform.rotation);
             
-            // Update container transform
-            container.localPosition += holoLens.display.transform.translate;
-            container.localRotation *= holoLens.display.transform.rotate;
-            container.localScale = holoLens.display.transform.scale;
-
-            // Disable the origin finder
-            if (_originFinder != null)
-            {
-                _originFinder.Disable();
-                _originFinder = null;
-            }
+            SetOrigin(-worldAnchor.transform.position, worldAnchor.transform.rotation);
 
             if (_worldAnchorStore != null)
                 _worldAnchorStore.Save(holoLens.display.id, _worldAnchor);
@@ -118,81 +111,72 @@ namespace HEVS.UniSA.HoloLens
         }
 
         // Sets the origin and creates a world anchor
-        private WorldAnchor CreateWorldAnchor(Vector3 position, Quaternion rotation)
-        {
-#if UNITY_WSA
+        private WorldAnchor CreateWorldAnchor(Vector3 position, Quaternion rotation) {
             // Create world anchor
             WorldAnchor worldAnchor = new GameObject("WorldAnchor").AddComponent<WorldAnchor>();
             worldAnchor.transform.position = position;
             worldAnchor.transform.rotation = rotation;
 
-            // TODO: For some reason this crashes things
-            /*if (holoLens.display.HoloLensData().shareOrigin)
+
+#if !UNITY_EDITOR
+            if (holoLens.display.HoloLensData().shareOrigin)
             {
                 // Share the world anchor
                 WorldAnchorTransferBatch transferBatch = new WorldAnchorTransferBatch();
                 transferBatch.AddWorldAnchor(holoLens.display.id, worldAnchor);
-                WorldAnchorTransferBatch.ExportAsync(transferBatch, SendWorldAnchorData, SendComplete);
-            }*/
+
+                WorldAnchorTransferBatch.ExportAsync(transferBatch, (byte[] data) => {
+                    RPCManager.CallMaster(HoloLensConfig.current, "ShareOriginData", data);
+                }, (SerializationCompletionReason completionReason) => {
+                    RPCManager.CallMaster(HoloLensConfig.current, "ShareOriginComplete", completionReason == SerializationCompletionReason.Succeeded);
+                });
+            }
+#endif
 
             return worldAnchor;
-#else
-            return null;
-#endif
         }
-        #endregion
+#endregion
 
-        #region Shared World Anchor
+#if UNITY_WSA
+#region Shared World Anchor
 
         /// <summary>
         /// Sets the world anchor at the origin from data.
         /// </summary>
         /// <param name="data">A world anchor as data.</param>
-        public void SetOriginWithData(byte[] data)
-        {
-            if (holoLens.display.HoloLensData().shareOrigin)
-                WorldAnchorTransferBatch.ImportAsync(data, ReceiveWorldAnchor);
-        }
+        public void SetOriginWithData(byte[] data) {
 
-        // Share bytes with other HoloLenses
-        private void SendWorldAnchorData(byte[] data)
-        {
-            RPCManager.CallMaster(HoloLensConfig.current, "SetAllHoloLensOrigins", data);
-        }
+            if (holoLens.display.HoloLensData().shareOrigin) {
+                WorldAnchorTransferBatch.ImportAsync(data, (SerializationCompletionReason completionReason, WorldAnchorTransferBatch batch) => {
 
-        private void SendComplete(SerializationCompletionReason completionReason) { }
-        
-        // Get world anchor from byte data
-        private void ReceiveWorldAnchor(SerializationCompletionReason completionReason, WorldAnchorTransferBatch deserializedTransferBatch)
-        {
-            if (completionReason != SerializationCompletionReason.Succeeded) return;
+                    if (completionReason != SerializationCompletionReason.Succeeded) return;
 
-            // Disable the origin finder if it exists
-            if (_originFinder != null)
-            {
-                _originFinder.Disable();
-                _originFinder = null;
+                    // Disable the origin finder if it exists
+                    if (_originFinder != null) {
+                        _originFinder.Disable();
+                        _originFinder = null;
+                    }
+
+                    // Create the world anchor
+                    SetWorldAnchor(batch.LockObject(holoLens.display.id, _worldAnchor == null ?
+                        new GameObject("WorldAnchor") : _worldAnchor.gameObject));
+                });
             }
-
-            // Create the world anchor
-            SetWorldAnchor(deserializedTransferBatch.LockObject(holoLens.display.id, _worldAnchor == null ?
-                new GameObject("WorldAnchor") : _worldAnchor.gameObject));
         }
-        #endregion
 
-        #region Store World Anchor
+#endregion
+
+#region Store World Anchor
 
         // Once the store is loaded, try to load the world anchor
-        private void WorldAnchorStoreLoaded(WorldAnchorStore store)
-        {
+        private void WorldAnchorStoreLoaded(WorldAnchorStore store) {
             _worldAnchorStore = store;
 
             WorldAnchor worldAnchor = _worldAnchorStore.Load(holoLens.display.id, new GameObject("WorldAnchor"));
 
             if (worldAnchor)
                 SetWorldAnchor(worldAnchor);
-            else
-            {
+            else {
                 // Origin could be found if sharing was used
                 if (_worldAnchor)
                     _worldAnchorStore.Save(holoLens.display.id, _worldAnchor);
@@ -200,6 +184,33 @@ namespace HEVS.UniSA.HoloLens
                     StartFinding();
             }
         }
-        #endregion
+#endregion
+
+#endif
+        
+#endif
+
+        // Sets the origin and direction for the holoLens
+        private void SetOrigin(Vector2 position, Quaternion rotation) {
+
+            Transform container = holoLens.transform.parent;
+
+            // Reverse the current transform
+            container.position = -position;
+            container.rotation = Quaternion.Inverse(rotation);
+
+            // Update container transform
+            container.localPosition += holoLens.display.transform.translate;
+            container.localRotation *= holoLens.display.transform.rotate;
+            container.localScale = holoLens.display.transform.scale;
+
+            // Disable the origin finder
+            if (_originFinder != null) {
+                _originFinder.Disable();
+                _originFinder = null;
+            }
+
+            found = true;
+        }
     }
 }

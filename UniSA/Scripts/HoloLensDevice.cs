@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections;
 using UnityEngine;
-using HEVS.UniSA.HoloLens;
+using System.IO;
 #if UNITY_WSA
 using UnityEngine.XR;
 using UnityEngine.XR.WSA;
@@ -9,13 +9,11 @@ using UnityEngine.XR.WSA.Persistence;
 using UnityEngine.XR.WSA.Sharing;
 #endif
 
-namespace HEVS.UniSA
-{
+namespace HEVS.UniSA.HoloLens {
     /// <summary>
     /// Exists only on HoloLens devices to send transform and input.
     /// </summary>
-    internal class HoloLensDevice
-    {
+    internal class HoloLensDevice {
         #region Variables
 
         /// <summary>
@@ -36,10 +34,11 @@ namespace HEVS.UniSA
 
         private OriginController _origin;
 
+        private MemoryStream _originData;
+
         #endregion
 
-        public HoloLensDevice(Transform transform, DisplayConfig display)
-        {
+        public HoloLensDevice(Transform transform, DisplayConfig display) {
             // Must have holoLens data
             if (display.HoloLensData() == null) throw new Exception("Display does not contain HoloLensData.");
 
@@ -59,8 +58,7 @@ namespace HEVS.UniSA
 
             // Wait for remoting or start
             if (remote != null) HolographicRemoting.Connect(remote.address, remote.maxBitRate);
-            else
-            {
+            else {
                 _holoLensStarted = true;
                 SetUpHoloLens();
             };
@@ -69,24 +67,22 @@ namespace HEVS.UniSA
             SetUpHoloLens();
 #endif
         }
-        
+
         // Set up the HoloLens' camera
-        private void SetUpHoloLens()
-        {
+        private void SetUpHoloLens() {
             HoloLensData holoLens = display.HoloLensData();
 
             // Get the holoLens' camera's transform
             UnityEngine.Camera camera = transform.gameObject.GetComponent<UnityEngine.Camera>();
 
             // Other Camera setup
-            if (holoLens.disableBackground)
-            {
+            if (holoLens.disableBackground) {
                 camera.clearFlags = CameraClearFlags.SolidColor;
                 camera.backgroundColor = new Color(0f, 0f, 0f, 0f);
             }
 
             camera.nearClipPlane = holoLens.clippingPlane;
-            
+
             // Adjust the quality if running locally
             if (holoLens.remote == null) QualitySettings.SetQualityLevel(0);
 
@@ -104,19 +100,21 @@ namespace HEVS.UniSA
             Update();
         }
 
-        public void Update()
-        {
+        public void Update() {
             // Try remoting if the holoLens is not set up
             if (!_holoLensStarted)
+#if UNITY_WSA
                 _holoLensStarted = TryRemoting();
+#else
+                _holoLensStarted = true;
+#endif
 
             // Look for an origin if one has not been set
             else {
 
                 _origin.Update();
 
-                if (_input == null)
-                {
+                if (_input == null) {
                     if (_origin.found)
                         _input = new InputController(this);
                 }
@@ -125,19 +123,18 @@ namespace HEVS.UniSA
             }
         }
 
-        #region Remoting
+#if UNITY_WSA
+
+#region Remoting
 
         // Try starting remoting if neccessary.
-        private bool TryRemoting()
-        {
-#if UNITY_WSA
+        private bool TryRemoting() {
             // Get the remote
             var remote = display.HoloLensData().remote;
 
             // If remoting has now connected
             if (remote != null && remote.connected == false
-                && HolographicRemoting.ConnectionState == HolographicStreamerConnectionState.Connected)
-            {
+                && HolographicRemoting.ConnectionState == HolographicStreamerConnectionState.Connected) {
                 remote.connected = true;
                 UniSAConfig.current.StartCoroutine(LoadDevice("WindowsMR"));
                 SetUpHoloLens();
@@ -145,28 +142,37 @@ namespace HEVS.UniSA
             }
 
             return false;
-#else
-            return true;
-#endif
         }
 
         // Neccessary for remoting.
-        IEnumerator LoadDevice(string newDevice)
-        {
+        IEnumerator LoadDevice(string newDevice) {
             XRSettings.LoadDeviceByName(newDevice);
             yield return null;
             XRSettings.enabled = true;
         }
-        #endregion
+#endregion
 
         /// <summary>
-        /// Sets the world anchor at the origin from data.
+        /// Adds to the world anchor data.
         /// </summary>
         /// <param name="data">A world anchor as data.</param>
-        public void SetOriginWithData(byte[] data)
-        {
-            _origin.SetOriginWithData(data);
+        public void ShareOriginData(byte[] data) {
+            if (_originData == null) _originData = new MemoryStream();
+
+            _originData.Write(data, 0, data.Length);
         }
 
+        /// <summary>
+        /// Finishes setting the origin.
+        /// </summary>
+        /// <param name="data">A world anchor as data.</param>
+        public void ShareOriginComplete(bool succeeded) {
+
+            if (succeeded && _originData != null) {
+                _origin.SetOriginWithData(_originData.ToArray());
+            }
+            _originData = null;
+        }
+#endif
     }
 }

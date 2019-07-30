@@ -8,9 +8,7 @@ namespace HEVS.UniSA.HoloLens
     /// </summary>
     internal class OriginLocator : OriginFinder
     {
-
-#if UNITY_WSA
-
+        
         #region Variables
 
         // The HoloLens' transform
@@ -70,23 +68,15 @@ namespace HEVS.UniSA.HoloLens
             return marker.transform;
         }
         #endregion
-#endif
 
         // Returns the transform of the marker if the origin has been set.
         public bool TryGetOrigin(out Vector3 position, out Quaternion rotation)
         {
             // Do the updating
-
-#if UNITY_WSA
+            
             position = Vector3.zero;
             rotation = new Quaternion();
             return false;
-#else
-            position = _marker.position;
-            rotation = _marker.rotation;
-
-            return true;
-#endif
         }
 
         public void Disable()

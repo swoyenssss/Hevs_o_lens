@@ -1,5 +1,5 @@
-﻿using UnityEngine;
-#if UNITY_WSA
+﻿#if UNITY_WSA
+using UnityEngine;
 using UnityEngine.XR.WSA.Input;
 #endif
 
@@ -28,9 +28,12 @@ namespace HEVS.UniSA.HoloLens
         public HandLocator(Handedness handedness)
         {
             _handedness = handedness;
+#if UNITY_WSA
             InteractionManager.InteractionSourceUpdated += InteractionSourceUpdated;
+#endif
         }
 
+#if UNITY_WSA
         // Sends the hands transform when it updates.
         private void InteractionSourceUpdated(InteractionSourceUpdatedEventArgs args)
         {
@@ -49,12 +52,13 @@ namespace HEVS.UniSA.HoloLens
         }
 
         // Get the handedness of a source
-        private bool CorrectHand(InteractionSource source)
+        private bool CorrectHand(UnityEngine.XR.WSA.Input.InteractionSource source)
         {
             if (_handedness == Handedness.NONE) return true;
 
             return (source.handedness == InteractionSourceHandedness.Right)
                 == (Handedness.RIGHT_HAND == _handedness);
         }
+#endif
     }
 }

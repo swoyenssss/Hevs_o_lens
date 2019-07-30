@@ -107,15 +107,15 @@ namespace HEVS.UniSA
             {
                 switch (json["origin"].Value)
                 {
-                    case "start_location":
+                    case "StartLocation":
                         origin = OriginType.START_LOCATION;
                         break;
 
-                    case "choose_origin":
+                    case "ChooseOrigin":
                         origin = OriginType.CHOOSE_ORIGIN;
                         break;
 
-                    case "find_origin":
+                    case "FindOrigin":
                         origin = OriginType.FIND_MARKER;
                         break;
                 }
@@ -218,7 +218,6 @@ namespace HEVS.UniSA
             START_LOCATION,
             CHOOSE_ORIGIN,
             FIND_MARKER,
-            STAND_ON_ORIGN,
         }
         #endregion
     }

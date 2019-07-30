@@ -1,7 +1,6 @@
-﻿using UnityEngine;
-#if UNITY_WSA
+﻿#if UNITY_WSA
+using UnityEngine;
 using UnityEngine.XR.WSA.Input;
-#endif
 
 namespace HEVS.UniSA.HoloLens
 {
@@ -11,9 +10,7 @@ namespace HEVS.UniSA.HoloLens
     /// </summary>
     internal class OriginPointer : OriginFinder
     {
-
-#if UNITY_WSA
-
+        
         #region Variables
 
         // The HoloLens' transform
@@ -102,7 +99,6 @@ namespace HEVS.UniSA.HoloLens
         // Called when HoloLens taps.
         private void HoloLensTap(TappedEventArgs args)
         { _found = true; }
-#endif
 
         // Returns the transform of the marker if the origin has been set.
         public bool TryGetOrigin(out Vector3 position, out Quaternion rotation)
@@ -110,15 +106,13 @@ namespace HEVS.UniSA.HoloLens
             // Update the markers transform
             _marker.transform.position = _cursor.transform.translate;
             _marker.transform.eulerAngles = new Vector3(0f, _holoLens.eulerAngles.y, 0f);
-
-#if UNITY_WSA
+    
             if (!_found)
             {
                 position = Vector3.zero;
                 rotation = new Quaternion();
                 return false;
             }
-#endif
             position = _marker.position;
             rotation = _marker.rotation;
             
@@ -133,3 +127,4 @@ namespace HEVS.UniSA.HoloLens
         }
     }
 }
+#endif

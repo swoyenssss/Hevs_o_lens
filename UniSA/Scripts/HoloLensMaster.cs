@@ -4,7 +4,7 @@ using OSCsharp.Data;
 using OSCsharp.Net;
 using OSCsharp.Utils;
 
-namespace HEVS.UniSA
+namespace HEVS.UniSA.HoloLens
 {
 
     /// <summary>

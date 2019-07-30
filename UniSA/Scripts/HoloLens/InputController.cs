@@ -66,16 +66,16 @@ namespace HEVS.UniSA.HoloLens
             HoloLensData data = holoLens.display.HoloLensData();
 
             if (data.tracker != null)
-                Transmitter.current.SendTracker(data.tracker, _input, new TransformConfig().Concatenate(holoLens.transform));
+                Transmitter.SendTracker(data.tracker, _input, new TransformConfig().Concatenate(holoLens.transform));
 
             if (data.cursorTracker != null)
-                Transmitter.current.SendTracker(data.cursorTracker, _cursorInput, _cursor.transform);
+                Transmitter.SendTracker(data.cursorTracker, _cursorInput, _cursor.transform);
 
             if (data.leftHandTracker != null)
-                Transmitter.current.SendTracker(data.leftHandTracker, _leftHandInput, _leftHand.transform);
+                Transmitter.SendTracker(data.leftHandTracker, _leftHandInput, _leftHand.transform);
 
             if (data.rightHandTracker != null)
-                Transmitter.current.SendTracker(data.rightHandTracker, _rightHandInput, _rightHand.transform);
+                Transmitter.SendTracker(data.rightHandTracker, _rightHandInput, _rightHand.transform);
         }
     }
 }

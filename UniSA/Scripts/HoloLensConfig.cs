@@ -3,7 +3,7 @@ using UnityEngine;
 using SimpleJSON;
 using UnityEngine.EventSystems;
 
-namespace HEVS.UniSA
+namespace HEVS.UniSA.HoloLens
 {
 
     /// <summary>
@@ -30,8 +30,6 @@ namespace HEVS.UniSA
         internal Dictionary<DisplayConfig, HoloLensData> holoLensConfigs;
 
         internal HoloLensDevice holoLens;
-        
-        private bool holoLensOriginSet;
         
         #endregion
 
@@ -72,6 +70,10 @@ namespace HEVS.UniSA
         {
             if (holoLens != null) holoLens.Update();
         }
+
+        private void OnApplicationQuit() {
+            Transmitter.CloseAll();
+        }
         #endregion
 
         // Loads the HoloLens configs from the json
@@ -99,17 +101,19 @@ namespace HEVS.UniSA
         }
 
         [HEVS.RPC]
-        internal void SetAllHoloLensOrigins(byte[] data)
-        {
-            if (holoLensOriginSet) return;
-            holoLensOriginSet = true;
-            RPCManager.CallClient(this, "SetHoloLensOrigin", data);
+        internal void ShareOriginData(byte[] data) {
+#if UNITY_WSA
+            if (holoLens != null) holoLens.ShareOriginData(data);
+#endif
+            if (Cluster.isMaster) RPCManager.CallClient(this, "ShareOriginData", data);
         }
 
         [HEVS.RPC]
-        internal void SetHoloLensOrigin(byte[] data)
-        {
-            if (holoLens != null) holoLens.SetOriginWithData(data);
+        internal void ShareOriginComplete(bool succeeded) {
+#if UNITY_WSA
+            if (holoLens != null) holoLens.ShareOriginComplete(succeeded);
+#endif
+            if (Cluster.isMaster) RPCManager.CallClient(this, "ShareOriginComplete", succeeded);
         }
     }
 }
