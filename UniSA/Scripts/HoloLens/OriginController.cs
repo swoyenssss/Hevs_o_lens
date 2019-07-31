@@ -179,7 +179,6 @@ namespace HEVS.UniSA.HoloLens {
                     SetWorldAnchor(worldAnchor);
                     return;
                 }
-
             }
 
             // Origin could already be found if sharing was used
@@ -195,17 +194,16 @@ namespace HEVS.UniSA.HoloLens {
         // Sets the origin and direction for the holoLens
         private void SetOrigin(Vector3 position, Quaternion rotation) {
 
-            Transform transform = holoLens.transform.parent;
-            Transform container = transform.parent;
+            Transform container = holoLens.transform.parent;
+            Transform transform = container.parent;
 
             // Reverse the current transform
-            transform.position = -position;
-            transform.rotation = Quaternion.Inverse(rotation);
+            container.position = -position;
 
             // Update container transform
-            container.position = holoLens.display.transform.translate;
-            container.rotation = holoLens.display.transform.rotate;
-            container.localScale = holoLens.display.transform.scale;
+            transform.position = holoLens.display.transform.translate;
+            transform.rotation = holoLens.display.transform.rotate * Quaternion.Inverse(rotation);
+            transform.localScale = holoLens.display.transform.scale;
 
             // Disable the origin finder
             if (_originFinder != null) {
