@@ -204,7 +204,7 @@ namespace HEVS.UniSA.HoloLens {
 
             // Update container transform
             container.position = holoLens.display.transform.translate;
-            container.rotation *= holoLens.display.transform.rotate;
+            container.rotation = holoLens.display.transform.rotate;
             container.localScale = holoLens.display.transform.scale;
 
             // Disable the origin finder
