@@ -52,7 +52,7 @@ namespace HEVS.UniSA.HoloLens
                 foreach (RaycastHit hit in hits)
                 {
                     // If this is the surface 
-                    if (hit.transform.name == "Spatial Collider")// TODO: this is bad but we can't make new layers
+                    if (hit.transform.parent != null && hit.transform.parent.name.StartsWith("Surface Parent"))// TODO: this is bad but we can't make new layers
                     {
                         // Store the distance, as it is more useful than position
                         _distance = Vector3.Distance(_holoLens.position, hit.point);

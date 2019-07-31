@@ -61,13 +61,14 @@ namespace HEVS.UniSA.HoloLens
         private TextMesh CreateText()
         {
             GameObject gameObject = new GameObject("Text");
-            gameObject.transform.parent = _holoLens;
-            gameObject.transform.position = new Vector3(0f, 1f, 10f);
-            gameObject.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+            gameObject.transform.SetParent(_holoLens, false);
+            gameObject.transform.localPosition = new Vector3(0f, 0.1f, 1f);
+            gameObject.transform.localScale = Vector3.one * 0.015f;
 
             //gameObject.layer = int.MaxValue;
             
             TextMesh text = gameObject.AddComponent<TextMesh>();
+            text.anchor = TextAnchor.MiddleCenter;
             text.alignment = TextAlignment.Center;
 
             return text;
@@ -79,17 +80,17 @@ namespace HEVS.UniSA.HoloLens
             // Create the marker object
             GameObject marker = new GameObject("Marker");
             marker.transform.parent = _holoLens;
-            marker.layer = int.MaxValue;
+            //marker.layer = 0;
 
             // Create the mesh
             Mesh mesh = new Mesh();
-            mesh.vertices = new Vector3[] { Vector3.zero, new Vector3(-0.1f, 0f, -0.1f), new Vector3(0.1f, 0f, -0.1f) };
-            mesh.triangles = new int[] { 0, 1, 2 };
+            mesh.vertices = new Vector3[] { Vector3.zero, new Vector3(-0.05f, 0f, -0.05f), new Vector3(0.05f, 0f, -0.05f) };
+            mesh.triangles = new int[] { 0, 1, 2, 0, 2, 1 };
 
             // Create the renderer and filter
-            MeshRenderer renderer = _holoLens.gameObject.AddComponent<MeshRenderer>();
+            MeshRenderer renderer = marker.gameObject.AddComponent<MeshRenderer>();
             renderer.material = new Material(Shader.Find("Unlit/Color"));
-            MeshFilter filter = _holoLens.gameObject.AddComponent<MeshFilter>();
+            MeshFilter filter = marker.gameObject.AddComponent<MeshFilter>();
             filter.mesh = mesh;
 
             return marker.transform;
@@ -113,8 +114,10 @@ namespace HEVS.UniSA.HoloLens
                 rotation = new Quaternion();
                 return false;
             }
+
             position = _marker.position;
             rotation = _marker.rotation;
+            Disable();
             
             return true;
         }

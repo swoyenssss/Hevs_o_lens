@@ -45,13 +45,15 @@ namespace HEVS.UniSA.HoloLens {
             this.transform = transform;
             this.display = display;
 
+            // Create containers
+            Transform outerContainer = new GameObject(display.id + "-HoloTransform").transform;
+            Transform innerContainer = new GameObject(display.id + "-HoloContainer").transform;
+            outerContainer.SetParent(transform.parent, false);
+            innerContainer.SetParent(outerContainer, false);
+            transform.SetParent(innerContainer, false);
+
             // Create the origin controller
             _origin = new OriginController(this);
-
-            // Create container
-            Transform container = new GameObject(display.id + "-HoloContainer").transform;
-            container.parent = transform.parent;
-            transform.parent = container;
 
 #if UNITY_WSA
             var remote = display.HoloLensData().remote;
@@ -92,8 +94,10 @@ namespace HEVS.UniSA.HoloLens {
             displayFactory.CreateDrawDisplays();
 
 #if UNITY_WSA
-            if (holoLens.cullMesh)
-                transform.parent.gameObject.AddComponent<SpatialMappingRenderer>();
+            if (holoLens.cullMesh) {
+                SpatialMappingRenderer renderer = transform.parent.gameObject.AddComponent<SpatialMappingRenderer>();
+                renderer.occlusionMaterial = Resources.Load<Material>("CullHoloLens");
+            }
             // TODO: may need a material
 #endif
 

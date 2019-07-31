@@ -36,7 +36,7 @@ namespace HEVS.UniSA.HoloLens {
 #endif
 
         #endregion
-        
+
         /// <summary>
         /// Constructs an origin controller object.
         /// </summary>
@@ -45,11 +45,11 @@ namespace HEVS.UniSA.HoloLens {
             this.holoLens = holoLens;
 
 #if UNITY_WSA
-            // Load world anchors or start now
-            if (holoLens.display.HoloLensData().storeOrigin)
-                WorldAnchorStore.GetAsync(WorldAnchorStoreLoaded);
-#endif
+            // Load world anchors store
+            WorldAnchorStore.GetAsync(WorldAnchorStoreLoaded);
+#else
             StartFinding();
+#endif
         }
 
         /// <summary>
@@ -85,9 +85,9 @@ namespace HEVS.UniSA.HoloLens {
 
                 default:
 #if UNITY_WSA
-                SetWorldAnchor(CreateWorldAnchor(holoLens.transform.position, Quaternion.Euler(0f, -holoLens.transform.localEulerAngles.y, 0f)));
+                SetWorldAnchor(CreateWorldAnchor(holoLens.transform.position, Quaternion.Euler(0f, holoLens.transform.localEulerAngles.y, 0f)));
 #else
-                SetOrigin(holoLens.transform.position, Quaternion.Euler(0f, -holoLens.transform.localEulerAngles.y, 0f));
+                SetOrigin(holoLens.transform.position, Quaternion.Euler(0f, holoLens.transform.localEulerAngles.y, 0f));
 #endif
                 return;
             }
@@ -95,14 +95,14 @@ namespace HEVS.UniSA.HoloLens {
 
 #if UNITY_WSA
 
-#region Set World Anchor
+        #region Set World Anchor
 
         // Sets the origin and direction for the holoLens
         private void SetWorldAnchor(WorldAnchor worldAnchor) {
             if (worldAnchor == null) { return; }
             _worldAnchor = worldAnchor;
-            
-            SetOrigin(-worldAnchor.transform.position, worldAnchor.transform.rotation);
+
+            SetOrigin(worldAnchor.transform.position, worldAnchor.transform.rotation);
 
             if (_worldAnchorStore != null)
                 _worldAnchorStore.Save(holoLens.display.id, _worldAnchor);
@@ -113,10 +113,11 @@ namespace HEVS.UniSA.HoloLens {
         // Sets the origin and creates a world anchor
         private WorldAnchor CreateWorldAnchor(Vector3 position, Quaternion rotation) {
             // Create world anchor
-            WorldAnchor worldAnchor = new GameObject("WorldAnchor").AddComponent<WorldAnchor>();
-            worldAnchor.transform.position = position;
-            worldAnchor.transform.rotation = rotation;
+            GameObject anchorObject = new GameObject("Origin");
+            anchorObject.transform.position = position;
+            anchorObject.transform.rotation = rotation;
 
+            WorldAnchor worldAnchor = anchorObject.AddComponent<WorldAnchor>();
 
 #if !UNITY_EDITOR
             if (holoLens.display.HoloLensData().shareOrigin)
@@ -135,10 +136,9 @@ namespace HEVS.UniSA.HoloLens {
 
             return worldAnchor;
         }
-#endregion
+        #endregion
 
-#if UNITY_WSA
-#region Shared World Anchor
+        #region Shared World Anchor
 
         /// <summary>
         /// Sets the world anchor at the origin from data.
@@ -164,44 +164,47 @@ namespace HEVS.UniSA.HoloLens {
             }
         }
 
-#endregion
+        #endregion
 
-#region Store World Anchor
+        #region Store World Anchor
 
         // Once the store is loaded, try to load the world anchor
         private void WorldAnchorStoreLoaded(WorldAnchorStore store) {
             _worldAnchorStore = store;
 
-            WorldAnchor worldAnchor = _worldAnchorStore.Load(holoLens.display.id, new GameObject("WorldAnchor"));
+            if (holoLens.display.HoloLensData().usePreviousOrigin) {
+                WorldAnchor worldAnchor = _worldAnchorStore.Load(holoLens.display.id, new GameObject("WorldAnchor"));
 
-            if (worldAnchor)
-                SetWorldAnchor(worldAnchor);
-            else {
-                // Origin could be found if sharing was used
-                if (_worldAnchor)
-                    _worldAnchorStore.Save(holoLens.display.id, _worldAnchor);
-                else
-                    StartFinding();
+                if (worldAnchor) {
+                    SetWorldAnchor(worldAnchor);
+                    return;
+                }
+
             }
-        }
-#endregion
 
-#endif
-        
+            // Origin could already be found if sharing was used
+            if (_worldAnchor)
+                _worldAnchorStore.Save(holoLens.display.id, _worldAnchor);
+            else
+                StartFinding();
+        }
+        #endregion
+
 #endif
 
         // Sets the origin and direction for the holoLens
-        private void SetOrigin(Vector2 position, Quaternion rotation) {
+        private void SetOrigin(Vector3 position, Quaternion rotation) {
 
-            Transform container = holoLens.transform.parent;
+            Transform transform = holoLens.transform.parent;
+            Transform container = transform.parent;
 
             // Reverse the current transform
-            container.position = -position;
-            container.rotation = Quaternion.Inverse(rotation);
+            transform.position = -position;
+            transform.rotation = Quaternion.Inverse(rotation);
 
             // Update container transform
-            container.localPosition += holoLens.display.transform.translate;
-            container.localRotation *= holoLens.display.transform.rotate;
+            container.position = holoLens.display.transform.translate;
+            container.rotation *= holoLens.display.transform.rotate;
             container.localScale = holoLens.display.transform.scale;
 
             // Disable the origin finder

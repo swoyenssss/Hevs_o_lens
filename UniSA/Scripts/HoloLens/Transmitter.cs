@@ -32,8 +32,9 @@ namespace HEVS.UniSA.HoloLens
         public static void CloseAll() {
             if (_transmitters == null) return;
 
+            if (_transmitterX != null) _transmitterX.Close();
+
             foreach (Transmitter transmitter in _transmitters.Values) {
-                if (transmitter._transmitterX != null) transmitter._transmitter.Close();
                 if (transmitter._transmitter != null) transmitter._transmitter.Close();
             }
         }
@@ -41,13 +42,14 @@ namespace HEVS.UniSA.HoloLens
         // The transmitter for sending OSC
         private UDPTransmitter _transmitter;
         // The transmitter for sending OSC
-        private UDPTransmitter _transmitterX;
+        private static UDPTransmitter _transmitterX;
 
         // Construct a transmitter to send hololens input.
         private Transmitter(int port)
         {
             // Create and start the transmitter
             _transmitter = new UDPTransmitter(Cluster.masterNode.address, port);// TODO: only have one transmitter
+            if (_transmitterX == null)
             _transmitterX = new UDPTransmitter(Cluster.masterNode.address, HoloLensConfig.current.holoPort);
             _transmitter.Connect();
         }

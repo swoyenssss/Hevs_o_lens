@@ -23,9 +23,9 @@ namespace HEVS.UniSA
         public bool shareOrigin = true;
 
         /// <summary>
-        /// Should stored a world anchor be loaded if it exists.
+        /// Should a stored world anchor be loaded if it exists.
         /// </summary>
-        public bool storeOrigin = true;
+        public bool usePreviousOrigin = false;
 
         /// <summary>
         /// If the background should be hidden.
@@ -35,7 +35,7 @@ namespace HEVS.UniSA
         /// <summary>
         /// If real world objects should cull.
         /// </summary>
-        public bool cullMesh = true;
+        public bool cullMesh = false;
 
         /// <summary>
         /// The clipping plane for the HoloLens' camera.
@@ -99,7 +99,7 @@ namespace HEVS.UniSA
             if (json["clipping_plane"] != null) clippingPlane = json["clipping_plane"].AsFloat;
             if (json["disable_background"] != null) disableBackground = json["disable_background"].AsBool;
             if (json["share_origin"] != null) shareOrigin = json["share_origin"].AsBool;
-            if (json["store_origin"] != null) storeOrigin = json["store_origin"].AsBool;
+            if (json["use_previous_origin"] != null) usePreviousOrigin = json["use_previous_origin"].AsBool;
             if (json["cull_mesh"] != null) cullMesh = json["cull_mesh"].AsBool;
 
             // Choose how the origin is set
