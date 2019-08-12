@@ -4,11 +4,11 @@
             "id": "hololens",
 
             "nodes": [
-                { "id": "hololens-5u2gu", "address": "10.160.38.30", "display": "disp_hololens" }
+                { "id": "K46RS", "address": "10.160.39.59", "display": "disp_hololens" }
             ],
 
             "displays": [
-                { "id": "disp_hololens", "type": "mixedreality", "origin": "ChooseOrigin", "use_previous_origin": false, "tracker": "track_hololens" }
+                { "id": "disp_hololens", "type": "mixedreality", "origin": "ChooseOrigin", "use_previous_origin": false, "tracker": "track_hololens", "clipping_plane": 0.1 }
             ],
 
             "trackers": [
@@ -29,11 +29,11 @@
                          "auto_sync_nonstatic": false, "disable_client_physics": true, "framelock": "software" },
 
             "nodes": [
-                { "id": "inm275559", "address": "10.160.98.129", "display": [ "disp_farleft", "disp_left", "disp_right", "disp_farright" ], "resolution": [ 15360, 2160 ], "exclusive_fullscreen": true }
+                { "id": "inm275559", "address": "10.160.98.80", "display": [ "disp_farleft", "disp_left", "disp_right", "disp_farright" ], "resolution": [ 15360, 2160 ], "exclusive_fullscreen": true }
             ],
 
             "displays": [
-                { "id": [ "disp_farleft", "disp_left", "disp_right", "disp_farright" ], "type": "window", "cull_infront": true, "ul": [ -0.829, 0.0, 0 ], "ll": [ -0.829, -0.942, 0 ], "lr": [ 0.829, -0.942, 0 ] },
+                { "id": [ "disp_farleft", "disp_left", "disp_right", "disp_farright" ], "type": "offaxis", "cull_infront": true, "ul": [ -0.829, 0.0, 0 ], "ll": [ -0.829, -0.942, 0 ], "lr": [ 0.829, -0.942, 0 ] },
                 
                 { "id": "disp_farleft", "viewport": "vp_farleft", "transform": { "translate": [ -2.3, 1.8, 0.38 ], "rotate": [ 0, -90, 0 ] } },
                 { "id": "disp_left", "viewport": "vp_left", "transform": { "translate": [ -1.72, 1.8, 1.8 ], "rotate": [ 0, -45, 0 ] } },
@@ -42,10 +42,10 @@
             ],
 
             "viewports": [
-                { "id": "vp_farleft", "x": 0, "width": 3840, "height": 2160 },
-                { "id": "vp_left", "x": 3840, "width": 3840, "height": 2160 },
-                { "id": "vp_right", "x": 7680, "width": 3840, "height": 2160 },
-                { "id": "vp_farright", "x": 11520, "width": 3840, "height": 2160 }
+                { "id": "vp_farleft", "x": 0, "width": 0.25 },
+                { "id": "vp_left", "x": 0.25, "width": 0.25 },
+                { "id": "vp_right", "x": 0.5, "width": 0.25 },
+                { "id": "vp_farright", "x": 0.75, "width": 0.25 }
             ]
         },
         {
@@ -87,7 +87,7 @@
                          "auto_sync_nonstatic": false, "disable_client_physics": true, "framelock": "software" },
 
             "nodes": [
-                { "id": "inm275559", "address": "10.160.98.129", "display": [ "disp_farleft", "disp_left", "disp_right", "disp_farright" ], "resolution": [ 15360, 2160 ], "exclusive_fullscreen": true }
+                { "id": "inm275559", "address": "10.160.98.80", "display": [ "disp_farleft", "disp_left", "disp_right", "disp_farright" ], "resolution": [ 15360, 2160 ], "exclusive_fullscreen": true }
             ],
 
             "displays": [
@@ -100,10 +100,10 @@
             ],
 
             "viewports": [
-                { "id": "vp_farleft", "x": 0, "width": 3840, "height": 2160 },
-                { "id": "vp_left", "x": 3840, "width": 3840, "height": 2160 },
-                { "id": "vp_right", "x": 7680, "width": 3840, "height": 2160 },
-                { "id": "vp_farright", "x": 11520, "width": 3840, "height": 2160 }
+                { "id": "vp_farleft", "x": 0, "width": 0.25 },
+                { "id": "vp_left", "x": 0.25, "width": 0.25 },
+                { "id": "vp_right", "x": 0.5, "width": 0.25 },
+                { "id": "vp_farright", "x": 0.75, "width": 0.25 }
             ],
 
             "trackers": [
