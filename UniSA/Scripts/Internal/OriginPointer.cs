@@ -60,12 +60,13 @@ namespace HEVS.UniSA
         {
             GameObject gameObject = new GameObject("Text");
             gameObject.transform.SetParent(_holoLens, false);
-            gameObject.transform.localPosition = new Vector3(0f, 0.1f, 1f);
-            gameObject.transform.localScale = Vector3.one * 0.015f;
+            gameObject.transform.localPosition = new Vector3(0f, 0.12f, 1f);
+            gameObject.transform.localScale = Vector3.one * 0.005f;
 
             //gameObject.layer = int.MaxValue;
             
             TextMesh text = gameObject.AddComponent<TextMesh>();
+            text.fontSize = 32;
             text.anchor = TextAnchor.MiddleCenter;
             text.alignment = TextAlignment.Center;
 

@@ -15,7 +15,7 @@ namespace HEVS.UniSA {
     /// <summary>
     /// Config for a HoloLens display type.
     /// </summary>
-    [CustomDisplay("mixedreality")]
+    //[CustomDisplay("mixedreality")]
     public class MixedRealityDisplay : Display {
 
         // The current display config (if it exists)
@@ -101,7 +101,7 @@ namespace HEVS.UniSA {
         /// Parses json data into the mixed reality display.
         /// </summary>
         public bool Parse(JSONNode json) {
-
+            
             // Basic variables
             if (json["clipping_plane"] != null) _clippingPlane = json["clipping_plane"].AsFloat;
             if (json["disable_background"] != null) _disableBackground = json["disable_background"].AsBool;
@@ -136,10 +136,13 @@ namespace HEVS.UniSA {
             }
 
             // Get all the relevant trackers
-            if (json["tracker"] != null) _tracker = PlatformConfig.current.trackers.Find(i => i.id == json["tracker"].Value);
-            if (json["left_hand_tracker"] != null) _leftHandTracker = PlatformConfig.current.trackers.Find(i => i.id == json["left_hand_tracker"].Value);
-            if (json["right_hand_tracker"] != null) _rightHandTracker = PlatformConfig.current.trackers.Find(i => i.id == json["right_hand_tracker"].Value);
-            if (json["cursor_tracker"] != null) _cursorTracker = PlatformConfig.current.trackers.Find(i => i.id == json["cursor_tracker"].Value);
+            if (PlatformConfig.current != null)
+            {// TODO: is not read in inspector
+                if (json["tracker"] != null) _tracker = PlatformConfig.current.trackers.Find(i => i.id == json["tracker"].Value);
+                if (json["left_hand_tracker"] != null) _leftHandTracker = PlatformConfig.current.trackers.Find(i => i.id == json["left_hand_tracker"].Value);
+                if (json["right_hand_tracker"] != null) _rightHandTracker = PlatformConfig.current.trackers.Find(i => i.id == json["right_hand_tracker"].Value);
+                if (json["cursor_tracker"] != null) _cursorTracker = PlatformConfig.current.trackers.Find(i => i.id == json["cursor_tracker"].Value);
+            }
             // TODO: check if tracker is OSC
 
             return true;
@@ -178,10 +181,7 @@ namespace HEVS.UniSA {
             }
 #endif
             // Create the origin controller
-            OriginController.FindAsync(() => {
-                // Once the origin is set, start the input
-                InputController.Start();
-            });
+            OriginController.FindAsync(InputController.Start);
         }
 
         /// <summary>

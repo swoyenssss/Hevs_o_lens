@@ -114,8 +114,11 @@ namespace HEVS.UniSA {
             if (_worldAnchorStore != null)
                 _worldAnchorStore.Save(MixedRealityDisplay.currentDisplayConfig.id, _worldAnchor);
 
-            _finishAction.Invoke();
-            _finishAction = null;
+            if (_finishAction != null)
+            {
+                _finishAction.Invoke();
+                _finishAction = null;
+            }
         }
 
         // Sets the origin and creates a world anchor
@@ -128,17 +131,17 @@ namespace HEVS.UniSA {
             WorldAnchor worldAnchor = anchorObject.AddComponent<WorldAnchor>();
 
 #if !UNITY_EDITOR
-            if (holoLens.display.HoloLensData().shareOrigin)
+            if (MixedRealityDisplay.currentDisplay.shareOrigin)
             {
                 // Share the world anchor
                 WorldAnchorTransferBatch transferBatch = new WorldAnchorTransferBatch();
-                transferBatch.AddWorldAnchor(holoLens.display.id, worldAnchor);
+                transferBatch.AddWorldAnchor(MixedRealityDisplay.currentDisplayConfig.id, worldAnchor);
 
                 WorldAnchorTransferBatch.ExportAsync(transferBatch, (byte[] data) => {
-                    RPCManager.CallMaster(HoloLensConfig.current, NodeConfig.current.id, "ShareOriginData", data);
+                    RPCManager.CallOnMaster(UniSAConfig.current, NodeConfig.current.id, "ShareOriginData", data);
                 },
                 (SerializationCompletionReason completionReason) => {
-                    RPCManager.CallMaster(HoloLensConfig.current, "ShareOriginComplete", NodeConfig.current.id,
+                    RPCManager.CallOnMaster(UniSAConfig.current, "ShareOriginComplete", NodeConfig.current.id,
                         completionReason == SerializationCompletionReason.Succeeded);
                 });
             }

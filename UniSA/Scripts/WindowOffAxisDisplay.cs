@@ -6,17 +6,17 @@ using System.Linq;
 namespace HEVS.UniSA
 {
 
-    [CustomDisplay("trackedwindow")]
+    //[CustomDisplay("trackedwindow")]
     public class TrackedWindowOffAxisDisplay : Tracked<WindowOffAxisDisplay> { }
 
-    [CustomDisplay("window")]
+    //[CustomDisplay("window")]
     public class WindowOffAxisDisplay : Display {
 
         /// <summary>
         /// The basic display.
         /// </summary>
         public OffAxisDisplay display { get => _display; }
-        private OffAxisDisplay _display;
+        private OffAxisDisplay _display = new OffAxisDisplay();
 
         /// <summary>
         /// The origin position of the camera
@@ -30,7 +30,7 @@ namespace HEVS.UniSA
         private bool _cullInfront = false;
 
         public void DrawGizmo(DisplayConfig displayOwner) {
-            throw new System.NotImplementedException();
+            _display.DrawGizmo(displayOwner);
         }
 
         /// <summary>
@@ -38,8 +38,7 @@ namespace HEVS.UniSA
         /// </summary>
         public bool Parse(JSONNode jsonNode)
         {
-            if (display == null) _display = new OffAxisDisplay();
-            display.Parse(jsonNode);
+            _display.Parse(jsonNode);
             
             if (jsonNode["cull_infront"] != null) _cullInfront = jsonNode["cull_infront"].AsBool;
             if (jsonNode["camera_origin"] != null) { cameraOrigin.Parse(jsonNode["camera_origin"]); }
@@ -51,28 +50,31 @@ namespace HEVS.UniSA
         /// Use OffAxisDisplay's Raycast.
         /// </summary>
         public bool Raycast(DisplayConfig displayOwner, Ray ray, out float distance, out Vector2 hitPoint2D) {
-            return display.Raycast(displayOwner, ray, out distance, out hitPoint2D);
+            return _display.Raycast(displayOwner, ray, out distance, out hitPoint2D);
         }
 
         /// <summary>
         /// Setup and use OffAxisDisplay's Setup.
         /// </summary>
         public void Setup(DisplayConfig displayOwner, bool stereo) {
-            Setup(displayOwner, stereo);
+            displayOwner.displayRig = _display;
+            _display.Setup(displayOwner, stereo);
 
-            var camera = Camera.displayCameras.FirstOrDefault(i => i.name.Contains(displayOwner.id));
+            var camera = Camera.main.GetComponentsInChildren<UnityEngine.Camera>().FirstOrDefault(i => i.name == displayOwner.id);
 
-            if (camera == null) {
+            if (camera != null) {
+                // TODO: this is bad... should not have to do this
+                camera.transform.localPosition = Vector3.zero;
 
                 Configuration.OnPreUpdate += () => {
 
                     // Move the camera
-                    if (!cameraOrigin.matrix.isIdentity)
-                        camera.transform.localPosition = displayOwner.transformOffset.TransformPoint(cameraOrigin.translate);
+                    //if (!cameraOrigin.matrix.isIdentity)
+                    //    camera.transform.localPosition = displayOwner.transformOffset.TransformPoint(cameraOrigin.translate);
                     
                     // Cull infront
                     if (cullInfront)
-                        camera.nearClipPlane = Vector3.Distance(displayOwner.transformOffset.translate,camera.transform.localPosition);
+                        camera.nearClipPlane = Vector3.Distance(displayOwner.transformOffset.translate, camera.transform.localPosition);
                 };
             }
         }
@@ -81,7 +83,7 @@ namespace HEVS.UniSA
         /// Use OffAxisDisplay's ViewportPointToRay.
         /// </summary>
         public Ray ViewportPointToRay(DisplayConfig displayOwner, Vector2 displaySpacePoint) {
-            return ViewportPointToRay(displayOwner, displaySpacePoint);
+            return _display.ViewportPointToRay(displayOwner, displaySpacePoint);
         }
     }
 }

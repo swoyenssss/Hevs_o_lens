@@ -18,10 +18,16 @@ namespace HEVS.UniSA {
 
             // Eventually won't need this
             HoloLensMaster.current = new HoloLensMaster();
+
+            foreach (var c in Camera.main.GetComponentsInChildren<UnityEngine.Camera>())
+            {
+                c.transform.localPosition = Vector3.zero;
+            }
         }
 
         private void OnApplicationQuit() {
             Transmitter.CloseAll();
+            HoloLensMaster.current.Disable();
         }
 
 
