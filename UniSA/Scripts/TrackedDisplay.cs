@@ -5,16 +5,16 @@ using System.Linq;
 
 namespace HEVS.UniSA {
 
-    //[CustomDisplay("trackedoffaxis")]
+    [CustomDisplay("trackedoffaxis")]
     public class TrackedOffAxisDisplay : Tracked<OffAxisDisplay> { }
 
-    //[CustomDisplay("trackedcurved")]
+    [CustomDisplay("trackedcurved")]
     public class TrackedCurvedDisplay : Tracked<CurvedDisplay> { }
 
-    //[CustomDisplay("trackeddome")]
+    [CustomDisplay("trackeddome")]
     public class TrackedDomeDisplay : Tracked<DomeDisplay> { }
 
-    //[CustomDisplay("tracked")]
+    [CustomDisplay("tracked")]
     public class TrackedDisplay : Tracked<StandardDisplay> { }
 
     /// <summary>
@@ -80,14 +80,18 @@ namespace HEVS.UniSA {
 
             // Store the initial transform
             TransformConfig originalOffset = displayOwner.transformOffset;
-            
+
             // Create a tracker
+            //TODO: Fix this
+            _tracker = PlatformConfig.current.trackers.Find(i => i.id == displayOwner.json["tracker"].Value);
             TrackerManager manager = new GameObject(_tracker.id + "-Tracker").AddComponent<TrackerManager>();
-            manager.gameObject.hideFlags = HideFlags.HideInInspector;
+            manager.transform.SetParent(displayOwner.gameObject.transform.parent.parent);
+            //manager.gameObject.hideFlags = HideFlags.HideInHierarchy;
             manager.id = _tracker.id;
 
             // Update the display owner every frame
-            Configuration.OnPreUpdate += () => {
+            Configuration.OnPreUpdate += () =>
+            {
                 displayOwner.transformOffset.translate = manager.transform.position - SceneOrigin.position + originalOffset.translate;
                 displayOwner.transformOffset.rotate = manager.transform.rotation * originalOffset.rotate;
                 displayOwner.transformOffset.scale = Vector3.Scale(manager.transform.lossyScale, originalOffset.scale);

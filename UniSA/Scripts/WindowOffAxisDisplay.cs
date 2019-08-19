@@ -6,10 +6,10 @@ using System.Linq;
 namespace HEVS.UniSA
 {
 
-    //[CustomDisplay("trackedwindow")]
+    [CustomDisplay("trackedwindow")]
     public class TrackedWindowOffAxisDisplay : Tracked<WindowOffAxisDisplay> { }
 
-    //[CustomDisplay("window")]
+    [CustomDisplay("window")]
     public class WindowOffAxisDisplay : Display {
 
         /// <summary>
@@ -69,6 +69,7 @@ namespace HEVS.UniSA
                 Configuration.OnPreUpdate += () => {
 
                     // Move the camera
+                    // TODO: Check with Conan about this
                     //if (!cameraOrigin.matrix.isIdentity)
                     //    camera.transform.localPosition = displayOwner.transformOffset.TransformPoint(cameraOrigin.translate);
                     

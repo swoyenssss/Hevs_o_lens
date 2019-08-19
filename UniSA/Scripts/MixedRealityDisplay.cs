@@ -15,7 +15,7 @@ namespace HEVS.UniSA {
     /// <summary>
     /// Config for a HoloLens display type.
     /// </summary>
-    //[CustomDisplay("mixedreality")]
+    [CustomDisplay("mixedreality")]
     public class MixedRealityDisplay : Display {
 
         // The current display config (if it exists)
@@ -151,7 +151,17 @@ namespace HEVS.UniSA {
         /// <summary>
         /// Set up the main camera to be a Mixed Reality Headset.
         /// </summary>
-        public void Setup(DisplayConfig displayOwner, bool stereo) {
+        public void Setup(DisplayConfig displayOwner, bool stereo)
+        {
+            // Get all the relevant trackers
+            if (PlatformConfig.current != null)
+            {// TODO: is not read in inspector
+                if (displayOwner.json["tracker"] != null) _tracker = PlatformConfig.current.trackers.Find(i => i.id == displayOwner.json["tracker"].Value);
+                if (displayOwner.json["left_hand_tracker"] != null) _leftHandTracker = PlatformConfig.current.trackers.Find(i => i.id == displayOwner.json["left_hand_tracker"].Value);
+                if (displayOwner.json["right_hand_tracker"] != null) _rightHandTracker = PlatformConfig.current.trackers.Find(i => i.id == displayOwner.json["right_hand_tracker"].Value);
+                if (displayOwner.json["cursor_tracker"] != null) _cursorTracker = PlatformConfig.current.trackers.Find(i => i.id == displayOwner.json["cursor_tracker"].Value);
+            }
+
             currentDisplayConfig = displayOwner;
 
 #if UNITY_WSA
@@ -161,15 +171,15 @@ namespace HEVS.UniSA {
                 return;
             };
 #endif
-            Camera.main.enabled = true;
+            var camera = displayOwner.gameObject.AddComponent<UnityEngine.Camera>();
 
             // Other Camera setup
             if (disableBackground) {
-                Camera.main.clearFlags = CameraClearFlags.SolidColor;
-                Camera.main.backgroundColor = Color.clear;
+                camera.clearFlags = CameraClearFlags.SolidColor;
+                camera.backgroundColor = Color.clear;
             }
 
-            Camera.main.nearClipPlane = clippingPlane;
+            camera.nearClipPlane = clippingPlane;
 
             // Adjust the quality if running locally
             if (remote == null) QualitySettings.SetQualityLevel(0);

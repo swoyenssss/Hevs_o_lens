@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.Windows.Speech;
 #if UNITY_WSA
 using UnityEngine.XR.WSA.Input;
@@ -63,7 +64,7 @@ namespace HEVS.UniSA {
                     _gestureRecognizer.NavigationCanceled += GestureNavigationCanceled;
                     _gestureRecognizer.NavigationUpdated += GestureNavigationUpdated; ;
                 }
-
+                
                 _gestureRecognizer.SetRecognizableGestures(gestureMask);
                 _gestureRecognizer.StartCapturingGestures();
             }
@@ -80,7 +81,7 @@ namespace HEVS.UniSA {
 
         private void GestureTapped(TappedEventArgs args) {
             if (!CorrectHand(args.source)) return;
-
+            
             if (args.tapCount == 1) Transmitter.SendButton(_tracker, "tap", true);
             else Transmitter.SendButton(_tracker, "double_tap", true);
         }

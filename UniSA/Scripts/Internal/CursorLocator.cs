@@ -37,8 +37,7 @@ namespace HEVS.UniSA
         {
             _holoLens = holoLens;
 #if UNITY_WSA
-            _collider = new GameObject("Spatial Collider").AddComponent<SpatialMappingCollider>();
-            _collider.surfaceParent = Camera.main.transform.parent.gameObject;
+            _collider = Camera.main.gameObject.AddComponent<SpatialMappingCollider>();
 #endif
         }
 
@@ -51,7 +50,7 @@ namespace HEVS.UniSA
                 foreach (RaycastHit hit in hits)
                 {
                     // If this is the surface 
-                    if (hit.transform.parent != null && hit.transform.parent == Camera.main.transform.parent)// TODO: this is bad but we can't make new layers
+                    if (hit.transform.parent != null && hit.transform.parent == _collider.surfaceParent.transform)// TODO: this is bad but we can't make new layers
                     {
                         // Store the distance, as it is more useful than position
                         _distance = Vector3.Distance(_holoLens.position, hit.point);
@@ -71,7 +70,7 @@ namespace HEVS.UniSA
         public void Close()
         {
 #if UNITY_WSA
-            Object.Destroy(_collider.gameObject);
+            Object.Destroy(_collider);
 #endif
         }
     }

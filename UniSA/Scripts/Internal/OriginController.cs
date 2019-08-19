@@ -39,11 +39,13 @@ namespace HEVS.UniSA {
             OriginController._finishAction = finishAction;
 
             // Create containers
+            // TODO: Reorder
             Transform outerContainer = new GameObject(MixedRealityDisplay.currentDisplayConfig.id + "-HoloTransform").transform;
             Transform innerContainer = new GameObject(MixedRealityDisplay.currentDisplayConfig.id + "-HoloContainer").transform;
-            outerContainer.SetParent(Camera.main.transform.parent, false);
+            outerContainer.SetParent(MixedRealityDisplay.currentDisplayConfig.gameObject.transform.parent, false);
+            outerContainer.localPosition = -Camera.main.transform.position;
             innerContainer.SetParent(outerContainer, false);
-            Camera.main.transform.SetParent(innerContainer, false);
+            MixedRealityDisplay.currentDisplayConfig.gameObject.transform.SetParent(innerContainer, false);
 
 #if UNITY_WSA
             if (MixedRealityDisplay.currentDisplay.shareOrigin) _shareData = new MemoryStream();
@@ -80,23 +82,25 @@ namespace HEVS.UniSA {
 
 #if UNITY_WSA
                 case MixedRealityDisplay.OriginType.CHOOSE_ORIGIN:
-                _originFinder = new OriginPointer(Camera.main.transform);
+                _originFinder = new OriginPointer(MixedRealityDisplay.currentDisplayConfig.gameObject.transform);
                 Configuration.OnPreUpdate += UpdateOriginFinder;
                 return;
 #endif
 
                 case MixedRealityDisplay.OriginType.FIND_MARKER:
-                _originFinder = new OriginLocator(Camera.main.transform);
+                _originFinder = new OriginLocator(MixedRealityDisplay.currentDisplayConfig.gameObject.transform);
                 Configuration.OnPreUpdate += UpdateOriginFinder;
                 return;
 
                 default:
 #if UNITY_WSA
-                SetWorldAnchor(CreateWorldAnchor(Camera.main.transform.position, Quaternion.Euler(0f, Camera.main.transform.localEulerAngles.y, 0f)));
+                SetWorldAnchor(CreateWorldAnchor(MixedRealityDisplay.currentDisplayConfig.gameObject.transform.position,
+                    Quaternion.Euler(0f, MixedRealityDisplay.currentDisplayConfig.gameObject.transform.localEulerAngles.y, 0f)));
 #else
-                SetOrigin(Camera.main.transform.position, Quaternion.Euler(0f, Camera.main.transform.localEulerAngles.y, 0f));
+                SetOrigin(MixedRealityDisplay.currentDisplayConfig.gameObject.transform.position,
+                    Quaternion.Euler(0f, MixedRealityDisplay.currentDisplayConfig.gameObject.transform.localEulerAngles.y, 0f));
 #endif
-                return;
+                    return;
             }
         }
 
@@ -231,7 +235,7 @@ namespace HEVS.UniSA {
         // Sets the origin and direction for the holoLens
         private static void SetOrigin(Vector3 position, Quaternion rotation) {
 
-            Transform container = Camera.main.transform.parent;
+            Transform container = MixedRealityDisplay.currentDisplayConfig.gameObject.transform.parent;
             Transform transform = container.parent;
 
             // Reverse the current transform
