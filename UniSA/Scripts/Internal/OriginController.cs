@@ -37,16 +37,7 @@ namespace HEVS.UniSA {
         /// <param name="holoLens">The holoLens device.</param>
         public static void FindAsync(Action finishAction) {
             OriginController._finishAction = finishAction;
-
-            // Create containers
-            // TODO: Reorder
-            Transform outerContainer = new GameObject(MixedRealityDisplay.currentDisplayConfig.id + "-HoloTransform").transform;
-            Transform innerContainer = new GameObject(MixedRealityDisplay.currentDisplayConfig.id + "-HoloContainer").transform;
-            outerContainer.SetParent(MixedRealityDisplay.currentDisplayConfig.gameObject.transform.parent, false);
-            outerContainer.localPosition = -Camera.main.transform.position;
-            innerContainer.SetParent(outerContainer, false);
-            MixedRealityDisplay.currentDisplayConfig.gameObject.transform.SetParent(innerContainer, false);
-
+            
 #if UNITY_WSA
             if (MixedRealityDisplay.currentDisplay.shareOrigin) _shareData = new MemoryStream();
 
@@ -235,11 +226,7 @@ namespace HEVS.UniSA {
         // Sets the origin and direction for the holoLens
         private static void SetOrigin(Vector3 position, Quaternion rotation) {
 
-            Transform container = MixedRealityDisplay.currentDisplayConfig.gameObject.transform.parent;
-            Transform transform = container.parent;
-
-            // Reverse the current transform
-            container.position = -position;
+            Transform transform = MixedRealityDisplay.currentDisplayConfig.gameObject.transform;
 
             // Update container transform
             TransformConfig transformOffset = MixedRealityDisplay.currentDisplayConfig.transformOffset;

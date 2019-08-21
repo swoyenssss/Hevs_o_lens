@@ -10,17 +10,11 @@ namespace HEVS.UniSA
     /// </summary>
     internal class CursorLocator
     {
-
-        private TransformConfig _transform;
+        
         /// <summary>
         /// The current transform of the cursor.
         /// </summary>
-        public TransformConfig transform { get
-            {
-                UpdateTransform();
-                return _transform;
-            }
-        }
+        public TransformConfig transform { get; private set; }
 
         // The HoloLens' transform.
         private Transform _holoLens;
@@ -39,29 +33,30 @@ namespace HEVS.UniSA
 #if UNITY_WSA
             _collider = Camera.main.gameObject.AddComponent<SpatialMappingCollider>();
 #endif
+            HEVS.Configuration.OnPreUpdate += Update;
         }
 
-        private void UpdateTransform()
+        private void Update()
         {
             // Raycast to hit the spatial mesh
-            RaycastHit[] hits = Physics.RaycastAll(_holoLens.position, _holoLens.forward);
+            RaycastHit[] hits = Physics.RaycastAll(_holoLens.position - HEVS.Camera.main.position, _holoLens.forward);
             if (hits != null && hits.Length > 0)
             {
                 foreach (RaycastHit hit in hits)
                 {
                     // If this is the surface 
-                    if (hit.transform.parent != null && hit.transform.parent == _collider.surfaceParent.transform)// TODO: this is bad but we can't make new layers
+                    if (hit.transform.parent != null && hit.transform.parent == _collider.surfaceParent.transform)
                     {
                         // Store the distance, as it is more useful than position
                         _distance = Vector3.Distance(_holoLens.position, hit.point);
-                        _transform.rotate = Quaternion.LookRotation(hit.normal, _holoLens.up);
+                        transform.rotate = Quaternion.LookRotation(hit.normal, _holoLens.up);
                         break;
                     }
                 }
             }
 
             // Update the markers transform
-            _transform.translate = _holoLens.position + _holoLens.forward * _distance;
+            transform.translate = _holoLens.position + _holoLens.forward * _distance;
         }
 
         /// <summary>

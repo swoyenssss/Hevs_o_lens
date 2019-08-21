@@ -171,7 +171,9 @@ namespace HEVS.UniSA {
                 return;
             };
 #endif
-            var camera = displayOwner.gameObject.AddComponent<UnityEngine.Camera>();
+            // Create camera
+            var camera = new GameObject("MixedRealityCamera").AddComponent<UnityEngine.Camera>();
+            camera.transform.SetParent(displayOwner.gameObject.transform, false);
 
             // Other Camera setup
             if (disableBackground) {
