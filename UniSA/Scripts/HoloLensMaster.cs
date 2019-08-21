@@ -29,7 +29,7 @@ namespace HEVS.UniSA.HoloLens
         public HoloLensMaster()
         {
             // Create the reciever
-            _receiver = new UDPReceiver(HoloLensConfig.current.holoPort, false);
+            _receiver = new UDPReceiver(6666, false);
             _receiver.MessageReceived += MessageReceived;
             _receiver.ErrorOccured += OscErrorOccured;
 
@@ -64,14 +64,14 @@ namespace HEVS.UniSA.HoloLens
             // For the type of the message
             if (tracker != null)
             {
-                foreach (var button in tracker.Json()["buttons"].Children)
+                foreach (var button in tracker.json["buttons"].Children)
                 {
                     if (button["id"] != address[2]) continue;
 
-                    if (tracker.Json()["mapping"].Count == 0)
-                        _input[tracker.Json()["mapping"].Value] = message.Data[2];
+                    if (tracker.json["mapping"].Count == 0)
+                        _input[tracker.json["mapping"].Value] = message.Data[2];
                     else
-                        foreach (var map in tracker.Json()["mapping"].Children)
+                        foreach (var map in tracker.json["mapping"].Children)
                             _input[map.Value] = message.Data[2];
                 }
             }

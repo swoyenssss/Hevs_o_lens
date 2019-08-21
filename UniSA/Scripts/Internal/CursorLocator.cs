@@ -10,11 +10,11 @@ namespace HEVS.UniSA
     /// </summary>
     internal class CursorLocator
     {
-        
+
         /// <summary>
         /// The current transform of the cursor.
         /// </summary>
-        public TransformConfig transform { get; private set; }
+        public TransformConfig transform;
 
         // The HoloLens' transform.
         private Transform _holoLens;
@@ -38,8 +38,9 @@ namespace HEVS.UniSA
 
         private void Update()
         {
+#if UNITY_WSA
             // Raycast to hit the spatial mesh
-            RaycastHit[] hits = Physics.RaycastAll(_holoLens.position - HEVS.Camera.main.position, _holoLens.forward);
+            RaycastHit[] hits = Physics.RaycastAll(_holoLens.position - HEVS.Camera.main.transform.position, _holoLens.forward);
             if (hits != null && hits.Length > 0)
             {
                 foreach (RaycastHit hit in hits)
@@ -57,6 +58,7 @@ namespace HEVS.UniSA
 
             // Update the markers transform
             transform.translate = _holoLens.position + _holoLens.forward * _distance;
+#endif
         }
 
         /// <summary>
