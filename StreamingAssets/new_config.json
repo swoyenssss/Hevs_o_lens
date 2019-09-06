@@ -1,0 +1,42 @@
+{
+    "platforms": [
+        {
+            "id": "hololens",
+
+            "cluster": { "master": "inm275559", "data_port": 4448, "sync_port": 4449, "packet_limit": 1048576, "auto_sync_rigid": true,
+                         "auto_sync_nonstatic": false, "disable_client_physics": true, "framelock": "software" },
+
+            "nodes": [
+                { "id": "hololens-g1cu1", "address": "10.233.126.91", "display": "disp_hololens" }
+            ],
+
+            "displays": [
+                { "id": "disp_hololens", "type": "mixedreality", "use_previous_origin": false, "tracker": "track_hololens", "left_hand_tracker": "track_left_hand", "right_hand_tracker": "track_right_hand", "clipping_plane": 0.1, "transform": { "translate": [ 0, -30.48, 0], "scale" : [ 40, 40, 40 ] } }
+            ],
+
+
+            "trackers": [
+                {
+                    "id": "track_hololens", "type": "osc", "port": 6666,
+                    "buttons": [
+                        { "id": "tap", "mapping": "Fire3" },
+                        { "id": "navigate_x", "mapping": "Horizontal" },
+                        { "id": "navigate_y", "mapping": "Vertical" }
+                    ]
+                },
+                {
+                    "id": "track_left_hand", "type": "osc", "port": 6666,
+                    "buttons": [
+                        { "id": "hold", "mapping": "Fire1" }
+                    ]
+                },
+                {
+                    "id": "track_right_hand", "type": "osc", "port": 6666,
+                    "buttons": [
+                        { "id": "hold", "mapping": "Fire2" }
+                    ]
+                }
+            ]+
+        }
+    ]
+}

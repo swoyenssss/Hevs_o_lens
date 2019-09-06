@@ -70,26 +70,22 @@
                 {
                     "id": "vp_farleft",
                     "x": 0,
-                    "width": 3840,
-                    "height": 2160
+                    "width": 0.25
                 },
                 {
                     "id": "vp_left",
-                    "x": 3840,
-                    "width": 3840,
-                    "height": 2160
+                    "x": 0.25,
+                    "width": 0.25
                 },
                 {
                     "id": "vp_right",
-                    "x": 7680,
-                    "width": 3840,
-                    "height": 2160
+                    "x": 0.5,
+                    "width": 0.25
                 },
                 {
                     "id": "vp_farright",
-                    "x": 11520,
-                    "width": 3840,
-                    "height": 2160
+                    "x": 0.75,
+                    "width": 0.25
                 }
             ]
         },

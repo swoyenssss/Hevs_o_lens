@@ -4,21 +4,27 @@
             "id": "hololens",
 
             "nodes": [
-                { "id": "K46RS", "address": "10.160.39.59", "display": "disp_hololens" }
+                { "id": "hololens-g1cu1", "address": "10.233.126.91", "display": "disp_hololens" }
             ],
 
             "displays": [
-                { "id": "disp_hololens", "type": "mixedreality", "origin": "ChooseOrigin", "use_previous_origin": false, "tracker": "track_hololens", "clipping_plane": 0.1 }
+                { "id": "disp_hololens", "type": "mixedreality", "use_previous_origin": false, "tracker": "track_hololens", "right_hand_tracker": "track_hand", "clipping_plane": 0.1, "transform": { "translate": [ 0, 0, 0], "scale" : [ 40, 40, 40 ] } }
             ],
+
 
             "trackers": [
                 {
                     "id": "track_hololens", "type": "osc", "port": 6666,
                     "buttons": [
-                        { "id": "tap", "mapping": "Fire1" },
-                        { "id": "navigate_x", "mapping": "Horizontal" },
-                        { "id": "navigate_y", "mapping": "Vertical" }
+                        { "id": "tap", "mapping": "Fire3" },
+                        { "id": "double_tap", "mapping": "Fire1" },
+                        { "id": "manipulation", "mapping": "Fire2" },
+                        { "id": "manipulation_x", "mapping": "Horizontal" },
+                        { "id": "manipulation_y", "mapping": "Vertical" }
                     ]
+                }
+                {
+                    "id": "track_hand", "type": "osc", "port": 6666
                 }
             ]
         },
@@ -29,7 +35,7 @@
                          "auto_sync_nonstatic": false, "disable_client_physics": true, "framelock": "software" },
 
             "nodes": [
-                { "id": "inm275559", "address": "10.160.98.80", "display": [ "disp_farleft", "disp_left", "disp_right", "disp_farright" ], "resolution": [ 15360, 2160 ], "exclusive_fullscreen": true }
+                { "id": "inm275559", "address": "10.160.98.155", "display": [ "disp_farleft", "disp_left", "disp_right", "disp_farright" ], "resolution": [ 15360, 2160 ], "exclusive_fullscreen": true }
             ],
 
             "displays": [
@@ -87,7 +93,7 @@
                          "auto_sync_nonstatic": false, "disable_client_physics": true, "framelock": "software" },
 
             "nodes": [
-                { "id": "inm275559", "address": "10.160.98.80", "display": [ "disp_farleft", "disp_left", "disp_right", "disp_farright" ], "resolution": [ 15360, 2160 ], "exclusive_fullscreen": true }
+                { "id": "inm275559", "address": "10.160.98.28", "display": [ "disp_farleft", "disp_left", "disp_right", "disp_farright" ], "resolution": [ 15360, 2160 ], "exclusive_fullscreen": true }
             ],
 
             "displays": [
@@ -107,7 +113,7 @@
             ],
 
             "trackers": [
-                { "id": "track_farleft", "type": "vrpn", "address": "Farleft@10.160.98.129", "forward": "Z", "right": "-X", "up": "Y", "handedness": "right" },
+                { "id": "track_farleft", "type": "vrpn", "address": "Farleft@10.160.98.128", "forward": "Z", "right": "-X", "up": "Y", "handedness": "right" },
                 { "id": "track_left", "type": "vrpn", "address": "Left@10.160.98.129", "forward": "Z", "right": "-X", "up": "Y", "handedness": "right" },
                 { "id": "track_right", "type": "vrpn", "address": "Right@10.160.98.129", "forward": "Z", "right": "-X", "up": "Y", "handedness": "right" },
                 { "id": "track_farright", "type": "vrpn", "address": "Farright@10.160.98.129", "forward": "Z", "right": "-X", "up": "Y", "handedness": "right" }
@@ -121,12 +127,12 @@
             ],
 
             "displays": [
-                { "id": "disp_touch", "type": "trackedwindow", "tracker": "track_touch", "cull_infront": true,
-                    "camera_origin": { "translate": [ 0, 0, -1.5 ] }, "ul": [ -0.4145, 0.471, 0 ], "ll": [ -0.4145, -0.471, 0 ], "lr": [ 1.2435, -0.471, 0 ] }
+                { "id": "disp_touch", "type": "window", "tracker": "track_touch", "cull_infront": true,
+                    "camera_origin": { "translate": [ 0, 0, -1.5 ] }, "ul": [ -1.4145, 0.471, 0 ], "ll": [ -1.4145, -0.471, 0 ], "lr": [ 0.2435, -0.471, 0 ] }
             ],
 
             "trackers": [
-                { "id": "track_touch", "type": "vrpn", "address": "Touch@10.160.98.80", "forward": "Z", "right": "-X", "up": "Y", "handedness": "right" }
+                { "id": "track_touch", "type": "vrpn", "address": "Touch@10.160.98.28", "forward": "Z", "right": "-X", "up": "Y", "handedness": "right" }
             ]
         },
         {

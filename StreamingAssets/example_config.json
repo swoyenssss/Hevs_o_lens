@@ -1,0 +1,274 @@
+{       
+  "globals": { 
+
+  },
+
+  "platforms": [
+    {
+      "id": "CAVE", 
+
+      "nodes": [
+        { "id": "localhost", "display": [ "disp_forward", "disp_left", "disp_right", "disp_down" ] }
+      ],
+
+      "displays": [
+        { "id": ["disp_forward", "disp_left", "disp_right", "disp_down"], "type": "offaxis" },
+
+        { "id": "disp_forward", "ul": [-1.0, 2.0, 2.0 ], "ll": [-1.0, 0.0, 2.0 ], "lr": [ 1.0, 0.0, 2.0 ], "viewport": "vp_forward" },
+        { "id": "disp_left",    "ul": [-1.0, 2.0, 0.0 ], "ll": [-1.0, 0.0, 0.0 ], "lr": [-1.0, 0.0, 2.0 ], "viewport": "vp_left"  },
+        { "id": "disp_right",   "ul": [ 1.0, 2.0, 2.0 ], "ll": [ 1.0, 0.0, 2.0 ], "lr": [ 1.0, 0.0, 0.0 ], "viewport": "vp_right"  },
+        { "id": "disp_down",    "ul": [-1.0, 0.0, 2.0 ], "ll": [-1.0, 0.0, 0.0 ], "lr": [ 1.0, 0.0, 0.0 ], "viewport": "vp_down"  }
+      ],
+
+      "viewports": [
+        { "id": "vp_forward", "x": 0, "y": 0.5, "width": 0.5, "height": 0.5 },
+        { "id": "vp_left",  "x": 0.5, "y": 0, "width": 0.5, "height": 0.5 },
+        { "id": "vp_right", "x": 0.5, "y": 0.5, "width": 0.5, "height": 0.5 },
+        { "id": "vp_down", "x": 0, "y": 0, "width": 0.5, "height": 0.5 }
+      ]
+    },
+
+    {
+      "id": "EPICylinder", 
+
+      "cluster": { "master": "master", "data_port": 7777, "sync_port": 7778, "packet_limit": 1048576,
+                   "auto_sync_rigid": true, "disable_client_physics": true,
+                   "framelock": "hardware", "framelock_master": "n01" },
+
+      "globals": {
+        
+       },
+
+      "nodes": [
+        { "id": "master", "address": "192.168.1.100", "display": "disp_master", "resolution": [ 800, 600 ], "fullscreen": false, "hardware_synced": false, "index": [ 7, 0 ] },
+        { "id": "n01", "address": "192.168.1.101", "display": "disp_01", "resolution": [ 1920, 2160 ], "index": [0, 0] },
+        { "id": "n02", "address": "192.168.1.102", "display": "disp_02", "resolution": [ 1920, 2160 ], "index": [0, 1] },
+        { "id": "n03", "address": "192.168.1.103", "display": "disp_03", "resolution": [ 1920, 2160 ], "index": [1, 0] },
+        { "id": "n04", "address": "192.168.1.104", "display": "disp_04", "resolution": [ 1920, 2160 ], "index": [1, 1] },
+        { "id": "n05", "address": "192.168.1.105", "display": "disp_05", "resolution": [ 1920, 2160 ], "index": [2, 0] },
+        { "id": "n06", "address": "192.168.1.106", "display": "disp_06", "resolution": [ 1920, 2160 ], "index": [2, 1] },
+        { "id": "n07", "address": "192.168.1.107", "display": "disp_07", "resolution": [ 1920, 2160 ], "index": [3, 0] },
+        { "id": "n08", "address": "192.168.1.108", "display": "disp_08", "resolution": [ 1920, 2160 ], "index": [3, 1] },
+        { "id": "n09", "address": "192.168.1.109", "display": "disp_09", "resolution": [ 1920, 2160 ], "index": [4, 0] },
+        { "id": "n10", "address": "192.168.1.110", "display": "disp_10", "resolution": [ 1920, 2160 ], "index": [4, 1] },
+        { "id": "n11", "address": "192.168.1.111", "display": "disp_11", "resolution": [ 1920, 2160 ], "index": [5, 0] },
+        { "id": "n12", "address": "192.168.1.112", "display": "disp_12", "resolution": [ 1920, 2160 ], "index": [5, 1] },
+        { "id": "n13", "address": "192.168.1.113", "display": "disp_13", "resolution": [ 1920, 2160 ], "index": [6, 0] },
+        { "id": "n14", "address": "192.168.1.114", "display": "disp_14", "resolution": [ 1920, 2160 ], "index": [6, 1] },
+        { "id": "n15", "address": "192.168.1.115", "display": "disp_15", "resolution": [ 1920, 2160 ], "index": [7, 0] },
+        { "id": "n16", "address": "192.168.1.116", "display": "disp_16", "resolution": [ 1920, 2160 ], "index": [7, 1] },
+        { "id": "n17", "address": "192.168.1.117", "display": "disp_17", "resolution": [ 1920, 2160 ], "index": [8, 0] },
+        { "id": "n18", "address": "192.168.1.118", "display": "disp_18", "resolution": [ 1920, 2160 ], "index": [8, 1] },
+        { "id": "n19", "address": "192.168.1.119", "display": "disp_19", "resolution": [ 1920, 2160 ], "index": [9, 0] },
+        { "id": "n20", "address": "192.168.1.120", "display": "disp_20", "resolution": [ 1920, 2160 ], "index": [9, 1] },
+        { "id": "n21", "address": "192.168.1.121", "display": "disp_21", "resolution": [ 1920, 2160 ], "index": [10, 0] },
+        { "id": "n22", "address": "192.168.1.122", "display": "disp_22", "resolution": [ 1920, 2160 ], "index": [10, 1] },
+        { "id": "n23", "address": "192.168.1.123", "display": "disp_23", "resolution": [ 1920, 2160 ], "index": [11, 0] },
+        { "id": "n24", "address": "192.168.1.124", "display": "disp_24", "resolution": [ 1920, 2160 ], "index": [11, 1] },
+        { "id": "n25", "address": "192.168.1.125", "display": "disp_25", "resolution": [ 1920, 2160 ], "index": [12, 0] },
+        { "id": "n26", "address": "192.168.1.126", "display": "disp_26", "resolution": [ 1920, 2160 ], "index": [12, 1] },
+        { "id": "n27", "address": "192.168.1.127", "display": "disp_27", "resolution": [ 1920, 2160 ], "index": [13, 0] },
+        { "id": "n28", "address": "192.168.1.128", "display": "disp_28", "resolution": [ 1920, 2160 ], "index": [13, 1] }
+      ],
+
+      "displays": [
+        { "id": "disp_master", "stereo_mode": "mono" },
+        { "id": "disp_01", "type": "offaxis", "index": [ 0, 0 ], "ul": [ 0.043, 3.092,-3.099 ], "ll": [ 0.043, 1.595,-3.099 ], "lr": [-1.253, 1.595,-2.841 ] },
+        { "id": "disp_02", "type": "offaxis", "index": [ 0, 1 ], "ul": [ 0.043, 1.593,-3.099 ], "ll": [ 0.043, 0.095,-3.099 ], "lr": [-1.253, 0.095,-2.841 ] },
+        { "id": "disp_03", "type": "offaxis", "index": [ 1, 0 ], "ul": [-1.254, 3.092,-2.840 ], "ll": [-1.254, 1.595,-2.840 ], "lr": [-2.332, 1.595,-2.075 ] },
+        { "id": "disp_04", "type": "offaxis", "index": [ 1, 1 ], "ul": [-1.254, 1.593,-2.840 ], "ll": [-1.254, 0.095,-2.840 ], "lr": [-2.332, 0.095,-2.075 ] },
+        { "id": "disp_05", "type": "offaxis", "index": [ 2, 0 ], "ul": [-2.334, 3.092,-2.074 ], "ll": [-2.334, 1.595,-2.074 ], "lr": [-3.005, 1.595,-0.936 ] },
+        { "id": "disp_06", "type": "offaxis", "index": [ 2, 1 ], "ul": [-2.334, 1.593,-2.074 ], "ll": [-2.334, 0.095,-2.074 ], "lr": [-3.005, 0.095,-0.936 ] },
+        { "id": "disp_07", "type": "offaxis", "index": [ 3, 0 ], "ul": [-3.006, 3.092,-0.934 ], "ll": [-3.006, 1.595,-0.934 ], "lr": [-3.154, 1.595, 0.379 ] },
+        { "id": "disp_08", "type": "offaxis", "index": [ 3, 1 ], "ul": [-3.006, 1.593,-0.934 ], "ll": [-3.006, 0.095,-0.934 ], "lr": [-3.154, 0.095, 0.379 ] },
+        { "id": "disp_09", "type": "offaxis", "index": [ 4, 0 ], "ul": [-3.153, 3.092, 0.381 ], "ll": [-3.153, 1.595, 0.381 ], "lr": [-2.752, 1.595, 1.640 ] },
+        { "id": "disp_10", "type": "offaxis", "index": [ 4, 1 ], "ul": [-3.153, 1.593, 0.381 ], "ll": [-3.153, 0.095, 0.381 ], "lr": [-2.752, 0.095, 1.640 ] },
+        { "id": "disp_11", "type": "offaxis", "index": [ 5, 0 ], "ul": [-2.751, 3.092, 1.642 ], "ll": [-2.751, 1.595, 1.642 ], "lr": [-1.871, 1.595, 2.627 ] },
+        { "id": "disp_12", "type": "offaxis", "index": [ 5, 1 ], "ul": [-2.751, 1.593, 1.642 ], "ll": [-2.751, 0.095, 1.642 ], "lr": [-1.871, 0.095, 2.627 ] },
+        { "id": "disp_13", "type": "offaxis", "index": [ 6, 0 ], "ul": [-1.869, 3.092, 2.629 ], "ll": [-1.869, 1.595, 2.629 ], "lr": [-0.663, 1.595, 3.168 ] },
+        { "id": "disp_14", "type": "offaxis", "index": [ 6, 1 ], "ul": [-1.869, 1.593, 2.629 ], "ll": [-1.869, 0.095, 2.629 ], "lr": [-0.663, 0.095, 3.168 ] },
+        { "id": "disp_15", "type": "offaxis", "index": [ 7, 0 ], "ul": [-0.661, 3.092, 3.169 ], "ll": [-0.661, 1.595, 3.169 ], "lr": [ 0.661, 1.595, 3.169 ] },
+        { "id": "disp_16", "type": "offaxis", "index": [ 7, 1 ], "ul": [-0.661, 1.593, 3.169 ], "ll": [-0.661, 0.095, 3.169 ], "lr": [ 0.661, 0.095, 3.169 ] },
+        { "id": "disp_17", "type": "offaxis", "index": [ 8, 0 ], "ul": [ 0.663, 3.092, 3.168 ], "ll": [ 0.663, 1.595, 3.168 ], "lr": [ 1.869, 1.595, 2.629 ] },
+        { "id": "disp_18", "type": "offaxis", "index": [ 8, 1 ], "ul": [ 0.663, 1.593, 3.168 ], "ll": [ 0.663, 0.095, 3.168 ], "lr": [ 1.869, 0.095, 2.629 ] },
+        { "id": "disp_19", "type": "offaxis", "index": [ 9, 0 ], "ul": [ 1.871, 3.092, 2.627 ], "ll": [ 1.871, 1.595, 2.627 ], "lr": [ 2.751, 1.595, 1.642 ] },
+        { "id": "disp_20", "type": "offaxis", "index": [ 9, 1 ], "ul": [ 1.871, 1.593, 2.627 ], "ll": [ 1.871, 0.095, 2.627 ], "lr": [ 2.751, 0.095, 1.642 ] },
+        { "id": "disp_21", "type": "offaxis", "index": [10, 0 ], "ul": [ 2.752, 3.092, 1.640 ], "ll": [ 2.752, 1.595, 1.640 ], "lr": [ 3.153, 1.595, 0.381 ] },
+        { "id": "disp_22", "type": "offaxis", "index": [10, 1 ], "ul": [ 2.752, 1.593, 1.640 ], "ll": [ 2.752, 0.095, 1.640 ], "lr": [ 3.153, 0.095, 0.381 ] },
+        { "id": "disp_23", "type": "offaxis", "index": [11, 0 ], "ul": [ 3.154, 3.092, 0.379 ], "ll": [ 3.154, 1.595, 0.379 ], "lr": [ 3.006, 1.595,-0.934 ] },
+        { "id": "disp_24", "type": "offaxis", "index": [11, 1 ], "ul": [ 3.154, 1.593, 0.379 ], "ll": [ 3.154, 0.095, 0.379 ], "lr": [ 3.006, 0.095,-0.934 ] },
+        { "id": "disp_25", "type": "offaxis", "index": [12, 0 ], "ul": [ 3.005, 3.092,-0.936 ], "ll": [ 3.005, 1.595,-0.936 ], "lr": [ 2.334, 1.595,-2.074 ] },
+        { "id": "disp_26", "type": "offaxis", "index": [12, 1 ], "ul": [ 3.005, 1.593,-0.936 ], "ll": [ 3.005, 0.095,-0.936 ], "lr": [ 2.334, 0.095,-2.074 ] },
+        { "id": "disp_27", "type": "offaxis", "index": [13, 0 ], "ul": [ 2.332, 3.092,-2.075 ], "ll": [ 2.332, 1.595,-2.075 ], "lr": [ 1.254, 1.595,-2.840 ] },
+        { "id": "disp_28", "type": "offaxis", "index": [13, 1 ], "ul": [ 2.332, 1.593,-2.075 ], "ll": [ 2.332, 0.095,-2.075 ], "lr": [ 1.254, 0.095,-2.840 ] }
+      ],
+
+      "stereo": { "mode": "quadbuffered", "separation": 0.065, "alignment": "screen", "separate_eyes": false },
+
+      "trackers": [
+        { "id": "Head", "type": "vrpn", "address": "Head@192.168.100.227", 
+          "forward": "Y", "right": "X", "up": "Z", "handedness": "right", "smooth": true, "smooth_multiplier": 1 }
+      ],
+
+      "tuio": [
+        { "id": "Tablet", "port": 3333 }
+      ]      
+    },
+
+    {
+      "id": "EPICylinderMono",
+      "inherit": "EPICylinder",
+      "stereo": { "mode": "mono" }
+    },
+
+    {
+      "id": "EPICylinderSoftware",
+      "inherit": "EPICylinder",
+      "cluster": { "framelock": "software"  }
+    },
+
+    {
+      "id": "EPICylinderMonoSoftware",
+      "inherit": ["EPICylinderMono", "EPICylinderSoftware"]
+    },
+
+    {
+      "id": "EPICylinderTracked",
+      "inherit": "EPICylinder",
+      "stereo": { "alignment": "camera", "tracker": "Head"  }
+    },
+
+    {
+      "id": "EPICylinder2D", 
+
+      "cluster": { "master": "master", "data_port": 7777, "sync_port": 7778, "packet_limit": 1048576,
+                   "auto_sync_rigid": true, "disable_client_physics": true,
+                   "framelock": "hardware", "framelock_master": "n01" },
+
+      "nodes": [
+        { "id": "master", "address": "192.168.1.100", "resolution": [ 800, 600 ], "fullscreen": false, "hardware_synced": false, "index": [ 7, 0 ] },
+        { "id": "n01", "address": "192.168.1.101", "resolution": [ 1920, 2160 ], "index": [0, 1] },
+        { "id": "n02", "address": "192.168.1.102", "resolution": [ 1920, 2160 ], "index": [0, 0] },
+        { "id": "n03", "address": "192.168.1.103", "resolution": [ 1920, 2160 ], "index": [1, 1] },
+        { "id": "n04", "address": "192.168.1.104", "resolution": [ 1920, 2160 ], "index": [1, 0] },
+        { "id": "n05", "address": "192.168.1.105", "resolution": [ 1920, 2160 ], "index": [2, 1] },
+        { "id": "n06", "address": "192.168.1.106", "resolution": [ 1920, 2160 ], "index": [2, 0] },
+        { "id": "n07", "address": "192.168.1.107", "resolution": [ 1920, 2160 ], "index": [3, 1] },
+        { "id": "n08", "address": "192.168.1.108", "resolution": [ 1920, 2160 ], "index": [3, 0] },
+        { "id": "n09", "address": "192.168.1.109", "resolution": [ 1920, 2160 ], "index": [4, 1] },
+        { "id": "n10", "address": "192.168.1.110", "resolution": [ 1920, 2160 ], "index": [4, 0] },
+        { "id": "n11", "address": "192.168.1.111", "resolution": [ 1920, 2160 ], "index": [5, 1] },
+        { "id": "n12", "address": "192.168.1.112", "resolution": [ 1920, 2160 ], "index": [5, 0] },
+        { "id": "n13", "address": "192.168.1.113", "resolution": [ 1920, 2160 ], "index": [6, 1] },
+        { "id": "n14", "address": "192.168.1.114", "resolution": [ 1920, 2160 ], "index": [6, 0] },
+        { "id": "n15", "address": "192.168.1.115", "resolution": [ 1920, 2160 ], "index": [7, 1] },
+        { "id": "n16", "address": "192.168.1.116", "resolution": [ 1920, 2160 ], "index": [7, 0] },
+        { "id": "n17", "address": "192.168.1.117", "resolution": [ 1920, 2160 ], "index": [8, 1] },
+        { "id": "n18", "address": "192.168.1.118", "resolution": [ 1920, 2160 ], "index": [8, 0] },
+        { "id": "n19", "address": "192.168.1.119", "resolution": [ 1920, 2160 ], "index": [9, 1] },
+        { "id": "n20", "address": "192.168.1.120", "resolution": [ 1920, 2160 ], "index": [9, 0] },
+        { "id": "n21", "address": "192.168.1.121", "resolution": [ 1920, 2160 ], "index": [10, 1] },
+        { "id": "n22", "address": "192.168.1.122", "resolution": [ 1920, 2160 ], "index": [10, 0] },
+        { "id": "n23", "address": "192.168.1.123", "resolution": [ 1920, 2160 ], "index": [11, 1] },
+        { "id": "n24", "address": "192.168.1.124", "resolution": [ 1920, 2160 ], "index": [11, 0] },
+        { "id": "n25", "address": "192.168.1.125", "resolution": [ 1920, 2160 ], "index": [12, 1] },
+        { "id": "n26", "address": "192.168.1.126", "resolution": [ 1920, 2160 ], "index": [12, 0] },
+        { "id": "n27", "address": "192.168.1.127", "resolution": [ 1920, 2160 ], "index": [13, 1] },
+        { "id": "n28", "address": "192.168.1.128", "resolution": [ 1920, 2160 ], "index": [13, 0] }
+      ]
+    },
+
+    {
+      "id": "StereoWall", 
+      "nodes": [ { "id": "localhost", "display": "disp_forward" } ],
+      "displays": [ { "id": "disp_forward", "type": "offaxis", "ul": [-2.0, 3.0, 2.0 ], "ll": [-2.0, 1.0, 2.0 ], "lr": [ 2.0, 1.0, 2.0 ] } ],
+      "stereo": { "mode": "topbottom", "separation": 0.065 }
+    },
+
+    {
+      "id": "StereoWallTracked",
+      "inherit": "StereoWall",
+      "stereo": { "alignment": "camera", "tracker": "Head"  },
+      "trackers": [
+        { "id": "Wand", "type": "vrpn", "address": "Wand@192.168.100.227", "forward": "Y", "right": "X", "up": "Z", "handedness": "right" },
+        { "id": "Head", "type": "vrpn", "address": "Head@192.168.100.227", "forward": "Y", "right": "X", "up": "Z", "handedness": "right" }
+      ]
+    },
+
+    {
+      "id": "MultiProjectorCurved",
+
+      "nodes": [
+        { "id": "localhost", "display": ["disp_l", "disp_r"], "resolution": [ 5120, 3200 ] }
+      ],
+
+      "displays": [
+        { "id": "disp_l", "type": "curved", "slices": 4, "blackLevel": 1, "radius": 4.25, "height": 2.9, "angle_start": -60, "angle_end": 0, "viewport": "vp_left" },
+        { "id": "disp_r", "type": "curved", "slices": 4, "blackLevel": 1, "radius": 4.25, "height": 2.9, "angle_start": 0, "angle_end": 60, "viewport": "vp_right" }
+      ],
+
+      "viewports": [
+        { "id": "vp_left", "x": 0, "y": 0, "width": 0.5, "height": 1 },
+        { "id": "vp_right", "x": 0.5, "y": 0, "width": 0.5, "height": 1 }
+      ],
+
+      "stereo": { "mode": "topbottom", "separation": 0.035 }
+    }, 
+    
+    {
+      "id": "FisheyeDome",
+
+      "nodes": [
+        { "id": "localhost", "display": "disp_dome", "resolution": [ 10240, 3200 ] }
+      ],
+
+      "displays": [
+        { "id": "disp_dome", "type": "dome", "fisheye_resolution": [ 4096, 4096 ], 
+          "transform": { "translate": [0.0, 0.0, 0.0], "rotate": [-45.0, 0.0, 0.0] }, "radius": 3.0 }
+      ],
+
+      "trackers": [
+        { "id": "Wand", "type": "vrpn", "address": "Controller1@tracker", "forward": "-Z", "right": "X", "up": "Y", "handedness": "right", "transform": { "translate": [0,0,0], "rotate": [90,0,0] }, 
+          "buttons": [
+            {"index": 1, "mapping": "Fire2"},
+            {"index": 2, "mapping": "Back"},
+            {"index": 33, "mapping": ["Fire1", "Submit"]},
+            {"index": 32, "mapping": "Fire3"}
+          ],
+        "axes": [
+            { "index": 0, "mapping": "Horizontal"},
+            { "index": 1, "mapping": "Vertical"}
+          ]}
+      ]
+    },
+
+    {
+      "id": "MultiProjectorDome",
+
+      "nodes": [
+        { "id": "localhost", "display": "disp_dome", "resolution": [ 10240, 3200 ] }
+      ],
+
+      "displays": [
+        { "id": "disp_dome", "type": "dome",
+          "fisheye_resolution": [ 4096, 4096 ], "projector_count": 8, "layout": [ 4, 2 ], "aspect_scale": 1,
+          "warp_path": "C:/DomeCalibration/", "blend_path": "C:/DomeCalibration/", 
+          "transform": { "translate": [0.0, 0.0, 0.0], "rotate": [-90.0, 0.0, 0.0] }, "radius": 3.0 }
+      ],
+
+      "trackers": [
+        { "id": "Wand", "type": "vrpn", "address": "Controller1@tracker", "forward": "-Z", "right": "X", "up": "Y", "handedness": "right", "transform": { "translate": [0,0,0], "rotate": [90,0,0] }, 
+          "buttons": [
+            {"index": 1, "mapping": "Fire2"},
+            {"index": 2, "mapping": "Back"},
+            {"index": 33, "mapping": ["Fire1", "Submit"]},
+            {"index": 32, "mapping": "Fire3"}
+          ],
+        "axes": [
+            { "index": 0, "mapping": "Horizontal"},
+            { "index": 1, "mapping": "Vertical"}
+          ]}
+      ]
+    }
+  ]
+}
