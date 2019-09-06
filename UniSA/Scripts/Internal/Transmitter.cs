@@ -44,13 +44,24 @@ namespace HEVS.UniSA {
 
         // Construct a transmitter to send hololens input.
         private Transmitter(int port) {
-            // Create and start the transmitter
-            _transmitter = new UDPTransmitter(Cluster.masterNode.address, port);// TODO: only have one transmitter
-            if (_transmitterX == null) {
-                _transmitterX = new UDPTransmitter(Cluster.masterNode.address, 6667);
+
+            // Create and start the transorm
+#if UNITY_EDITOR
+            _transmitter = new UDPTransmitter("127.0.0.1", port);
+#else
+            _transmitter = new UDPTransmitter(Cluster.masterNode.address, port);
+#endif
+
+            _transmitter.Connect();
+            if (_transmitterX == null)
+            {
+#if UNITY_EDITOR
+                _transmitterX = new UDPTransmitter("127.0.0.1", 6667);// TODO: only have one transmitter
+#else
+                _transmitterX = new UDPTransmitter(Cluster.masterNode.address, 6667);// TODO: only have one transmitter
+#endif
                 _transmitterX.Connect();
             }
-            _transmitter.Connect();
         }
 
         /// <summary>
@@ -61,8 +72,8 @@ namespace HEVS.UniSA {
 
             // Send the transform data
             Vector3 rotate = transform.rotate.eulerAngles;
-            transmitter.SendOSC(tracker.id + "/transform",
-                transform.translate.x, transform.translate.y, transform.translate.z, rotate.x, rotate.y, rotate.z);
+            transmitter.SendOSC("/" + tracker.id + "/transform",
+                transform.translate.x, transform.translate.y, transform.translate.z, rotate.x, rotate.y, rotate.z, 1f, 1f, 1f);
         }
 
         /// <summary>
@@ -71,7 +82,7 @@ namespace HEVS.UniSA {
         public static void SendButton(TrackerConfig tracker, string button, object value) {
             Transmitter transmitter = GetTransmitter(((OSCTrackerData)tracker.data).port);
             
-            transmitter.SendOSCX(tracker.id + "/button/" + button, value);
+            transmitter.SendOSCX("/" + tracker.id + "/button/" + button, value);
         }
         
         // Send data through OSC

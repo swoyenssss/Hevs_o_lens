@@ -222,8 +222,11 @@ namespace HEVS.UniSA {
             // TODO: Decide how holoLens should be drawn if at all.
         }
 
+        public void OnPlatformActivated()
+        { }
+
         #endregion
-        
+
         /// <summary>
         /// The ways that the origin can be set.
         /// </summary>

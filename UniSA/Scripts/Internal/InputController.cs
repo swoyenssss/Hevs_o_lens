@@ -9,14 +9,13 @@ namespace HEVS.UniSA
     /// </summary>
     internal static class InputController
     {
+        // TODO: has to be here or is garbage collected
+        private static InputHandler input = null, leftHandInput = null, rightHandInput = null, cursorInput = null;
+        private static HandLocator leftHand = null, rightHand = null;
+        private static CursorLocator cursor = null;
 
         public static void Start() {
             MixedRealityDisplay display = MixedRealityDisplay.currentDisplay;
-
-            // Create input handlers
-            InputHandler input = null, leftHandInput = null, rightHandInput = null, cursorInput = null;
-            HandLocator leftHand = null, rightHand = null;
-            CursorLocator cursor = null;
             
             if (display.tracker != null)
                 input = new InputHandler(display.tracker);
@@ -39,7 +38,14 @@ namespace HEVS.UniSA
             // Transmit the transform data
             Configuration.OnPreUpdate += () => {
                 if (display.tracker != null)
-                    Transmitter.SendTransform(display.tracker, new TransformConfig().Concatenate(Camera.main.transform));
+                {
+                    Transform mr = MixedRealityDisplay.currentDisplayConfig.gameObject.transform.GetChild(0);
+                    TransformConfig transform = new TransformConfig();
+                    transform.translate = mr.localPosition;
+                    transform.rotate = mr.localRotation;
+                    Transmitter.SendTransform(display.tracker, transform);
+                    // TODO: COncataetinate postion rotation not work
+                }
                 
                 if (display.leftHandTracker != null)
                     Transmitter.SendTransform(display.leftHandTracker, leftHand.transform);

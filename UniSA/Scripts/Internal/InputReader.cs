@@ -36,7 +36,8 @@ namespace HEVS.UniSA {
             GestureSettings gestureMask = GetGestureMask(tracker);
 
             // Using gestures
-            if (!gestureMask.HasFlag(GestureSettings.None)) {
+            if (gestureMask != GestureSettings.None)
+            {
                 // Add tap to recognisor
                 if (gestureMask.HasFlag(GestureSettings.Tap) || gestureMask.HasFlag(GestureSettings.DoubleTap))
                     _gestureRecognizer.Tapped += GestureTapped;
@@ -79,10 +80,10 @@ namespace HEVS.UniSA {
 
         #region Taps and Hold
 
-        private void GestureTapped(TappedEventArgs args) {
+        private void GestureTapped(TappedEventArgs args)
+        {
             if (!CorrectHand(args.source)) return;
-            
-            if (args.tapCount == 1) Transmitter.SendButton(_tracker, "tap", true);
+            if (args.tapCount == 1) { Transmitter.SendButton(_tracker, "tap", true); }
             else Transmitter.SendButton(_tracker, "double_tap", true);
         }
 
@@ -110,7 +111,11 @@ namespace HEVS.UniSA {
 
         // Manipulation Updated
         private void GestureManipulationUpdated(ManipulationUpdatedEventArgs args) {
-            if (CorrectHand(args.source)) SetManipulation(args.cumulativeDelta.x, args.cumulativeDelta.y, args.cumulativeDelta.z);
+            if (CorrectHand(args.source))
+            {
+                Transmitter.SendButton(_tracker, "manipulation", true);
+                SetManipulation(args.cumulativeDelta.x, args.cumulativeDelta.y, args.cumulativeDelta.z);
+            }
         }
 
         // Manipulation Ended
@@ -131,7 +136,8 @@ namespace HEVS.UniSA {
         #region Navigation
 
         // Navigation Started
-        private void GestureNavigationStarted(NavigationStartedEventArgs args) {
+        private void GestureNavigationStarted(NavigationStartedEventArgs args)
+        {
             if (CorrectHand(args.source)) {
                 Transmitter.SendButton(_tracker, "navigation", true);
                 SetNavigation(0f, 0f, 0f);
@@ -139,7 +145,13 @@ namespace HEVS.UniSA {
         }
 
         // Navigation Updated
-        private void GestureNavigationUpdated(NavigationUpdatedEventArgs args) { if (CorrectHand(args.source)) SetNavigation(args.normalizedOffset.x, args.normalizedOffset.y, args.normalizedOffset.z); }
+        private void GestureNavigationUpdated(NavigationUpdatedEventArgs args) {
+            if (CorrectHand(args.source))
+            {
+                Transmitter.SendButton(_tracker, "navigation", true);
+                SetNavigation(args.normalizedOffset.x, args.normalizedOffset.y, args.normalizedOffset.z);
+            }
+        }
 
         // Navigation Ended
         private void GestureNavigationCanceled(NavigationCanceledEventArgs args) {
@@ -197,15 +209,23 @@ namespace HEVS.UniSA {
                     gestureMask |= GestureSettings.Hold;
                     break;
 
-                    case "manipulation/x":
-                    case "manipulation/y":
-                    case "manipulation/z":
+                    case "manipulation_x":
+                    case "manipulation_y":
+                    case "manipulation_z":
                     gestureMask |= GestureSettings.ManipulationTranslate;
                     break;
 
-                    case "navigation/x":
-                    gestureMask |= GestureSettings.NavigationX;
-                    break;
+                    case "navigation_x":
+                        gestureMask |= GestureSettings.NavigationX;
+                        break;
+
+                    case "navigation_y":
+                        gestureMask |= GestureSettings.NavigationY;
+                        break;
+
+                    case "navigation_z":
+                        gestureMask |= GestureSettings.NavigationZ;
+                        break;
                 }
             }
 

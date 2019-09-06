@@ -66,13 +66,13 @@ namespace HEVS.UniSA
             {
                 foreach (var button in tracker.json["buttons"].Children)
                 {
-                    if (button["id"] != address[2]) continue;
-
+                    if (button["id"].Value != address[2]) continue;
+                    
                     if (tracker.json["mapping"].Count == 0)
-                        _input[tracker.json["mapping"].Value] = message.Data[2];
+                        _input[button["mapping"].Value] = message.Data[0];
                     else
-                        foreach (var map in tracker.json["mapping"].Children)
-                            _input[map.Value] = message.Data[2];
+                        foreach (var map in button["mapping"].Children)
+                            _input[map.Value] = message.Data[0];
                 }
             }
         }
@@ -88,10 +88,14 @@ namespace HEVS.UniSA
         {
             foreach (var input in _input)
             {
-                if (input.Value is bool && (bool)input.Value)
-                    Input.ForceButtonThisFrame(input.Key);
+                if (input.Value is bool)
+                {
+                    if ((bool)input.Value) Input.ForceButtonThisFrame(input.Key);
+                }
                 else
+                {
                     Input.AccumulateAxisThisFrame(input.Key, (float)input.Value);
+                }
             }
 
             _input.Clear();

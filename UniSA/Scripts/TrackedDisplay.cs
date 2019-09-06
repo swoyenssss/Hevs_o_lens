@@ -77,7 +77,7 @@ namespace HEVS.UniSA {
         public void Setup(DisplayConfig displayOwner, bool stereo) {
             displayOwner.displayRig = _display;
             _display.Setup(displayOwner, stereo);
-
+            
             // Store the initial transform
             TransformConfig originalOffset = displayOwner.transformOffset;
 
@@ -86,7 +86,7 @@ namespace HEVS.UniSA {
             _tracker = PlatformConfig.current.trackers.Find(i => i.id == displayOwner.json["tracker"].Value);
             TrackerManager manager = new GameObject(_tracker.id + "-Tracker").AddComponent<TrackerManager>();
             manager.transform.SetParent(displayOwner.gameObject.transform.parent.parent);
-            //manager.gameObject.hideFlags = HideFlags.HideInHierarchy;
+            manager.gameObject.hideFlags = HideFlags.HideInHierarchy;
             manager.id = _tracker.id;
 
             // Update the display owner every frame
@@ -104,6 +104,9 @@ namespace HEVS.UniSA {
         public Ray ViewportPointToRay(DisplayConfig displayOwner, Vector2 displaySpacePoint) {
             return _display.ViewportPointToRay(displayOwner, displaySpacePoint);
         }
+
+        public void OnPlatformActivated()
+        {}
         #endregion
     }
 }

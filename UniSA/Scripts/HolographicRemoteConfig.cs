@@ -36,5 +36,10 @@ namespace HEVS.UniSA
 
             return true;
         }
+
+        public void OnPlatformActivated()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }
