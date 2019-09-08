@@ -44,7 +44,7 @@ namespace HEVS.UniSA {
 
 
         [HEVS.RPC]
-        private void ShareOriginData(string clusterID, byte[] data) {
+        private void ShareOriginData(string clusterID, string data) {
 #if UNITY_WSA
             OriginController.ShareOriginData(clusterID, data);
 #endif

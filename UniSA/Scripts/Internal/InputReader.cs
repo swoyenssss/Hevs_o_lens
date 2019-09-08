@@ -88,14 +88,14 @@ namespace HEVS.UniSA {
         }
 
         private void GestureHoldStarted(HoldStartedEventArgs args) {
-            if (CorrectHand(args.source)) Transmitter.SendButton(_tracker, "hold", true);
+            if (CorrectHand(args.source)) Transmitter.SendButton(_tracker, "hold", 1f);
         }
 
         private void GestureHoldCompleted(HoldCompletedEventArgs args) {
-            if (CorrectHand(args.source)) Transmitter.SendButton(_tracker, "hold", false);
+            if (CorrectHand(args.source)) Transmitter.SendButton(_tracker, "hold", 0f);
         }
         private void GestureHoldCanceled(HoldCanceledEventArgs args) {
-            if (CorrectHand(args.source)) Transmitter.SendButton(_tracker, "hold", false);
+            if (CorrectHand(args.source)) Transmitter.SendButton(_tracker, "hold", 0f);
         }
         #endregion
 
@@ -104,7 +104,7 @@ namespace HEVS.UniSA {
         // Manipulation Started
         private void GestureManipulationStarted(ManipulationStartedEventArgs args) {
             if (CorrectHand(args.source)) {
-                Transmitter.SendButton(_tracker, "manipulation", true);
+                Transmitter.SendButton(_tracker, "manipulation", 1f);
                 SetManipulation(0f, 0f, 0f);
             }
         }
@@ -113,7 +113,7 @@ namespace HEVS.UniSA {
         private void GestureManipulationUpdated(ManipulationUpdatedEventArgs args) {
             if (CorrectHand(args.source))
             {
-                Transmitter.SendButton(_tracker, "manipulation", true);
+                Transmitter.SendButton(_tracker, "manipulation", 1f);
                 SetManipulation(args.cumulativeDelta.x, args.cumulativeDelta.y, args.cumulativeDelta.z);
             }
         }
@@ -121,13 +121,13 @@ namespace HEVS.UniSA {
         // Manipulation Ended
         private void GestureManipulationCanceled(ManipulationCanceledEventArgs args) {
             if (CorrectHand(args.source)) {
-                Transmitter.SendButton(_tracker, "manipulation", false);
+                Transmitter.SendButton(_tracker, "manipulation", 0f);
                 SetManipulation(0f, 0f, 0f);
             }
         }
         private void GestureManipulationCompleted(ManipulationCompletedEventArgs args) {
             if (CorrectHand(args.source)) {
-                Transmitter.SendButton(_tracker, "manipulation", false);
+                Transmitter.SendButton(_tracker, "manipulation", 0f);
                 SetManipulation(0f, 0f, 0f);
             }
         }
@@ -139,7 +139,7 @@ namespace HEVS.UniSA {
         private void GestureNavigationStarted(NavigationStartedEventArgs args)
         {
             if (CorrectHand(args.source)) {
-                Transmitter.SendButton(_tracker, "navigation", true);
+                Transmitter.SendButton(_tracker, "navigation", 1f);
                 SetNavigation(0f, 0f, 0f);
             }
         }
@@ -148,7 +148,7 @@ namespace HEVS.UniSA {
         private void GestureNavigationUpdated(NavigationUpdatedEventArgs args) {
             if (CorrectHand(args.source))
             {
-                Transmitter.SendButton(_tracker, "navigation", true);
+                Transmitter.SendButton(_tracker, "navigation", 1f);
                 SetNavigation(args.normalizedOffset.x, args.normalizedOffset.y, args.normalizedOffset.z);
             }
         }
@@ -156,13 +156,13 @@ namespace HEVS.UniSA {
         // Navigation Ended
         private void GestureNavigationCanceled(NavigationCanceledEventArgs args) {
             if (CorrectHand(args.source)) {
-                Transmitter.SendButton(_tracker, "navigation", false);
+                Transmitter.SendButton(_tracker, "navigation", 0f);
                 SetNavigation(0f, 0f, 0f);
             }
         }
         private void GestureNavigationCompleted(NavigationCompletedEventArgs args) {
             if (CorrectHand(args.source)) {
-                Transmitter.SendButton(_tracker, "navigation", false);
+                Transmitter.SendButton(_tracker, "navigation", 0f);
                 SetNavigation(0f, 0f, 0f);
             }
         }

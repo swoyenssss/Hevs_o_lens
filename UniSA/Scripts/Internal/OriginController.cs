@@ -2,6 +2,7 @@
 using System.Collections;
 using UnityEngine;
 using System.IO;
+using System.Text;
 #if UNITY_WSA
 using UnityEngine.XR;
 using UnityEngine.XR.WSA;
@@ -133,7 +134,7 @@ namespace HEVS.UniSA {
                 transferBatch.AddWorldAnchor(MixedRealityDisplay.currentDisplayConfig.id, worldAnchor);
 
                 WorldAnchorTransferBatch.ExportAsync(transferBatch, (byte[] data) => {
-                    RPCManager.CallOnMaster(UniSAConfig.current, NodeConfig.current.id, "ShareOriginData", data);
+                    RPCManager.CallOnMaster(UniSAConfig.current, NodeConfig.current.id, "ShareOriginData", Encoding.ASCII.GetString(data));
                 },
                 (SerializationCompletionReason completionReason) => {
                     RPCManager.CallOnMaster(UniSAConfig.current, "ShareOriginComplete", NodeConfig.current.id,
@@ -159,12 +160,12 @@ namespace HEVS.UniSA {
         /// Adds to the world anchor data.
         /// </summary>
         /// <param name="data">A world anchor as data.</param>
-        public static void ShareOriginData(string clusterID, byte[] data) {
+        public static void ShareOriginData(string clusterID, string data) {
             if (shareID == null) shareID = clusterID;
 
             if (_shareData == null || shareID != clusterID) return;
 
-            _shareData.Write(data, 0, data.Length);
+            _shareData.Write(Encoding.ASCII.GetBytes(data), 0, data.Length);
         }
 
         /// <summary>

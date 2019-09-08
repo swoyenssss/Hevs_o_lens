@@ -36,6 +36,8 @@ namespace HEVS.UniSA {
         public TrackerConfig tracker { get => _tracker; }
         private TrackerConfig _tracker;
 
+        private TrackerManager _manager;
+
         #endregion
 
         #region Create the Dynamic Display Config
@@ -60,7 +62,13 @@ namespace HEVS.UniSA {
             if (PlatformConfig.current != null)
             {// TODO: is not read in inspector
                 if (jsonNode["tracker"] != null) _tracker = PlatformConfig.current.trackers.Find(i => i.id == jsonNode["tracker"].Value);
+                
+                _manager = new GameObject(_tracker.id + "-Tracker").AddComponent<TrackerManager>();
+                _manager.transform.SetParent(displayOwner.gameObject.transform.parent.parent);
+                _manager.gameObject.hideFlags = HideFlags.HideInHierarchy;
+                _manager.id = _tracker.id;
             }
+
             return true;
         }
 
@@ -81,20 +89,15 @@ namespace HEVS.UniSA {
             // Store the initial transform
             TransformConfig originalOffset = displayOwner.transformOffset;
 
-            // Create a tracker
-            //TODO: Fix this
+            // TODO: should need to do this.
             _tracker = PlatformConfig.current.trackers.Find(i => i.id == displayOwner.json["tracker"].Value);
-            TrackerManager manager = new GameObject(_tracker.id + "-Tracker").AddComponent<TrackerManager>();
-            manager.transform.SetParent(displayOwner.gameObject.transform.parent.parent);
-            manager.gameObject.hideFlags = HideFlags.HideInHierarchy;
-            manager.id = _tracker.id;
 
             // Update the display owner every frame
             Configuration.OnPreUpdate += () =>
             {
-                displayOwner.transformOffset.translate = manager.transform.position - SceneOrigin.position + originalOffset.translate;
-                displayOwner.transformOffset.rotate = manager.transform.rotation * originalOffset.rotate;
-                displayOwner.transformOffset.scale = Vector3.Scale(manager.transform.lossyScale, originalOffset.scale);
+                displayOwner.transformOffset.translate = _manager.transform.position - SceneOrigin.position + originalOffset.translate;
+                displayOwner.transformOffset.rotate = _manager.transform.rotation * originalOffset.rotate;
+                displayOwner.transformOffset.scale = Vector3.Scale(_manager.transform.lossyScale, originalOffset.scale);
             };
         }
 
