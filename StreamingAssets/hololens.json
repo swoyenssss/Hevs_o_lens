@@ -7,7 +7,7 @@
                    "framelock": "software" },
       
       "nodes": [
-        { "id": "hololens-5u2gu", "address": "10.160.36.111", "display": "disp_hololens"},
+        { "id": "hololens-5u2gu", "address": "10.160.38.111", "display": "disp_hololens"},
 	{ "id": "desktop-slmumuk", "address": "10.160.99.173", "display": "disp_left", "resolution": [ 1920, 1080 ], "exclusive_fullscreen": true }
        
 	  ],

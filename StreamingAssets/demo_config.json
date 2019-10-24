@@ -4,11 +4,11 @@
             "id": "hololens",
 
             "nodes": [
-                { "id": "hololens-g1cu1", "address": "10.233.126.91", "display": "disp_hololens" }
+                { "id": "hl5", "address": "10.160.38.111", "display": "disp_hololens" }
             ],
 
             "displays": [
-                { "id": "disp_hololens", "type": "mixedreality", "use_previous_origin": false, "tracker": "track_hololens", "right_hand_tracker": "track_hand", "clipping_plane": 0.1, "transform": { "translate": [ 0, 0, 0], "scale" : [ 40, 40, 40 ] } }
+                { "id": "disp_hololens", "type": "mixedreality", "use_previous_origin": false, "tracker": "track_hololens", "right_hand_tracker": "track_hand", "clipping_plane": 0.1, "transform": { "translate": [ 0, 0, 0 ], "scale" : [ 40, 40, 40 ] } }
             ],
 
 
@@ -18,13 +18,15 @@
                     "buttons": [
                         { "id": "tap", "mapping": "Fire3" },
                         { "id": "double_tap", "mapping": "Fire1" },
-                        { "id": "manipulation", "mapping": "Fire2" },
-                        { "id": "manipulation_x", "mapping": "Horizontal" },
-                        { "id": "manipulation_y", "mapping": "Vertical" }
+                        { "id": "navigation", "mapping": "Fire2" },
+                        { "id": "navigation_x", "mapping": "Horizontal" },
+                        { "id": "navigation_y", "mapping": "Vertical" },
+                        { "id": "navigation_z", "mapping": "Fordinal" }
                     ]
-                }
-                {
-                    "id": "track_hand", "type": "osc", "port": 6666
+                },
+{
+                    "id": "track_test", "type": "osc", "port": 6611
+                   
                 }
             ]
         },

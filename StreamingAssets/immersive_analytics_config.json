@@ -4,11 +4,11 @@
             "id": "hololens",
 
             "nodes": [
-                { "id": "K46RS", "address": "10.160.39.59", "display": "disp_hololens" }
+                { "id": "hl5", "address": "10.160.38.111", "display": "disp_hololens" }
             ],
 
             "displays": [
-                { "id": "disp_hololens", "type": "mixedreality", "origin": "ChooseOrigin", "use_previous_origin": false, "tracker": "track_hololens", "clipping_plane": 0.1 }
+                { "id": "disp_hololens", "type": "mixedreality", "use_previous_origin": false, "tracker": "track_hololens", "clipping_plane": 0.1 }
             ],
 
             "trackers": [
@@ -29,7 +29,7 @@
                          "auto_sync_nonstatic": false, "disable_client_physics": true, "framelock": "software" },
 
             "nodes": [
-                { "id": "inm275559", "address": "10.160.98.80", "display": [ "disp_farleft", "disp_left", "disp_right", "disp_farright" ], "resolution": [ 15360, 2160 ], "exclusive_fullscreen": true }
+                { "id": "inm275559", "address": "10.160.98.155", "display": [ "disp_farleft", "disp_left", "disp_right", "disp_farright" ], "resolution": [ 15360, 2160 ], "exclusive_fullscreen": true }
             ],
 
             "displays": [

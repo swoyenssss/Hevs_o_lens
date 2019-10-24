@@ -1,0 +1,90 @@
+{
+    "platforms": [
+        {
+            "id": "hololens",
+
+            "nodes": [
+                { "id": "metabox", "address": "10.160.99.191", "display": "disp_hololens" }
+            ],
+
+            "displays": [
+                { "id": "disp_hololens", "type": "mixedreality", "use_previous_origin": false, "remote": { "address": "10.160.38.111" }, "tracker": "track_hololens", "right_hand_tracker": "track_hand", "clipping_plane": 0.1,"transform": { "translate": [ 0, 0, 0 ], "scale" : [ 40, 40, 40 ] } }
+            ],
+
+
+            "trackers": [
+                {
+                    "id": "track_hololens", "type": "osc", "port": 8123,
+                    "buttons": [
+                        { "id": "tap", "mapping": "Fire3" },
+                        { "id": "double_tap", "mapping": "Fire1" },
+                        { "id": "navigation", "mapping": "Fire2" },
+                        { "id": "navigation_x", "mapping": "Horizontal" },
+                        { "id": "navigation_y", "mapping": "Vertical" },
+                        { "id": "navigation_z", "mapping": "Fordinal" }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "quad_display",
+
+            "cluster": { "master": "inm275559", "data_port": 4448, "sync_port": 4449, "packet_limit": 1048576, "auto_sync_rigid": true,
+                         "auto_sync_nonstatic": false, "disable_client_physics": true, "framelock": "software" },
+
+            "nodes": [
+                { "id": "inm275559", "address": "10.160.98.155", "display": [ "disp_farleft", "disp_left", "disp_right", "disp_farright" ], "resolution": [ 15360, 2160 ], "exclusive_fullscreen": true }
+            ],
+
+            "displays": [
+                { "id": [ "disp_farleft", "disp_left", "disp_right", "disp_farright" ], "type": "window", "cull_infront": true, "ul": [ -0.829, 0.0, 0 ], "ll": [ -0.829, -0.942, 0 ], "lr": [ 0.829, -0.942, 0 ] },
+                
+                { "id": "disp_farleft", "viewport": "vp_farleft", "transform": { "translate": [ -2.3, 1.8, 0.38 ], "rotate": [ 0, -90, 0 ] } },
+                { "id": "disp_left", "viewport": "vp_left", "transform": { "translate": [ -1.72, 1.8, 1.8 ], "rotate": [ 0, -45, 0 ] } },
+                { "id": "disp_right", "viewport": "vp_right", "transform": { "translate": [ -0.3, 1.8, 2.4 ], "rotate": [ 0, 0, 0 ] } },
+                { "id": "disp_farright", "viewport": "vp_farright", "transform": { "translate": [ 1.12, 1.8, 1.8 ], "rotate": [ 0, 45, 0 ] } }
+            ],
+
+            "viewports": [
+                { "id": "vp_farleft", "x": 0, "width": 0.25 },
+                { "id": "vp_left", "x": 0.25, "width": 0.25 },
+                { "id": "vp_right", "x": 0.5, "width": 0.25 },
+                { "id": "vp_farright", "x": 0.75, "width": 0.25 }
+            ]
+        },
+        {
+            "id": "laptop",
+
+            "nodes": [
+                { "id": "metabox", "address": "10.160.99.191", "display": "disp_laptop", "exclusive_fullscreen": true }
+            ],
+
+            "displays": [
+                { "id": "disp_laptop", "type": "window", "cull_infront": true, "transform": { "translate": [ -10, 3, 40 ], "rotate": [ 0, 180, 0 ] },
+                    "camera_origin": { "translate": [ 1, -0.3, -4.25 ] }, "ul": [ -0.829, 0.0, 0 ], "ll": [ -0.829, -0.942, 0 ], "lr": [ 0.829, -0.942, 0 ] }
+            ]
+        },
+        {
+            "id": "tablet",
+
+            "nodes": [
+                { "id": "desktop-d4cfook", "address": "10.160.37.238", "display": "disp_tablet", "exclusive_fullscreen": true }
+            ],
+
+            "displays": [
+                { "id": "disp_tablet", "type": "window", "cull_infront": true, "transform": { "translate": [ 0, 3, -40 ] },
+                    "camera_origin": { "translate": [ 0, -0.3, -4.25 ] }, "ul": [ -0.829, 0.0, 0 ], "ll": [ -0.829, -0.942, 0 ], "lr": [ 0.829, -0.942, 0 ] }
+            ]
+        },
+        {
+            "id": "partial_setup",
+
+            "inherit": [ "quad_display", "hololens" ]
+        },
+        {
+            "id": "complete_setup",
+
+            "inherit": [ "quad_display", "hololens", "laptop", "tablet" ]
+        }
+    ]
+}
